@@ -4,7 +4,7 @@ import numpy
 
 def exploration(csv_file):
     df = pandas.read_csv(csv_file)
-    print(df)
+    #print(df)
 
     # * Obtener las dimensiones de los datos (filas x columnas)
     filas, columnas = df.shape
@@ -18,7 +18,7 @@ def exploration(csv_file):
 
     print("Nombres de las columnas:")
     for idx, nombre in enumerate(nombres_columnas):
-        print(f"•{idx+1}: {nombre}")
+        print(f"•{idx}: {nombre}")
 
     # * Prueba de acceso de nombre_columnas por medio de indices
     #print(nombres_columnas[3])
