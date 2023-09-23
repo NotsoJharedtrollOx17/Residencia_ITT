@@ -4,6 +4,7 @@ import numpy
 
 def exploration(csv_file):
     df = pandas.read_csv(csv_file)
+    print(df)
 
     # * Obtener las dimensiones de los datos (filas x columnas)
     filas, columnas = df.shape
@@ -20,15 +21,15 @@ def exploration(csv_file):
         print(f"•{idx+1}: {nombre}")
 
     # * Prueba de acceso de nombre_columnas por medio de indices
-    print(nombres_columnas[3])
+    #print(nombres_columnas[3])
 
     # * prueba de tipo de datos desplegados
-    datos = df.iloc[:, 3]
-    datos = datos.value_counts()
-    datos = datos.values
+    #datos = df.iloc[:, 3]
+    #datos = datos.value_counts()
+    #datos = datos.values
 
-    print(datos)
-    print(numpy.array(datos.tolist()))
+    #print(datos)
+    #print(numpy.array(datos.tolist()))
 
 
 def main():
