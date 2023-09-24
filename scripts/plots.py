@@ -1,9 +1,31 @@
 import pandas
 import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
 
 # * permite hacer las graficas con fondo transparente
 plt.rcParams.update({"figure.facecolor": (1, 1, 1, 0)})
 
+
+def wordCloud(df_csv, columna_csv):
+    nombre_archivo = f"wordcloud_preguntacolumna{columna_csv}"
+    nombre_pregunta = df_csv.columns.tolist()
+    datos = df_csv.iloc[:, columna_csv-1]
+    texto = " ".join(datos.values)
+    palabras_filtradas = getFilteredSpanishWords(texto)
+
+    # * Generación de la nube de palabras
+    wordcloud = WordCloud(background_color='white', max_font_size=40).generate(palabras_filtradas)
+
+    # * Parametros para graficos
+    fig, axes = plt.subplots(figsize=(10, 6))
+    axes.axis('off') # sin ejes
+    axes.imshow(wordcloud, interpolation='bilinear')
+    axes.set_title(f"{nombre_pregunta[columna_csv-1]}", fontsize=12)
+
+    plt.savefig(f"../results/plots/{nombre_archivo}")
+    plt.close()
+    print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
 def histograma(df, columna_csv, opciones):
     colores = ["royalblue", "darkorange", "limegreen", "mediumpurple", "indianred"]
@@ -44,7 +66,16 @@ def histograma(df, columna_csv, opciones):
         )
 
     plt.savefig(f"../results/plots/{nombre_archivo}")
+    plt.close()
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
+
+def getWordCloudOpinionesQuimica(df_csv):
+    # * dichas preguntas son las de las columnas 8 -> 11
+    print("INICIO WordCloud de opiniones respecto a la materia de Química")
+    for idx in range(8, 13):
+        wordCloud(df_csv, idx)
+    print("FIN WordCloud de opiniones respecto a la materia de Química")
+    print()
 
 def getHistogramaDatosDemograficos(df_csv):
     # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
@@ -66,6 +97,7 @@ def getHistogramaDatosDemograficos(df_csv):
     opciones_pregunta7 = ["Sí", "No"]
     opciones_pregunta27 = ["Mujer", "Hombre", "No binario", "Prefiero no decir"]
 
+    # * dichas preguntas son las de las columnas 3 -> 7 Y 27
     print("INICIO Histogramas de los Datos Demograficos")
     histograma(df_csv, 3, opciones_pregunta3)
     histograma(df_csv, 4, opciones_pregunta4)
@@ -73,9 +105,9 @@ def getHistogramaDatosDemograficos(df_csv):
     histograma(df_csv, 6, opciones_pregunta56)
     histograma(df_csv, 7, opciones_pregunta7)
     histograma(df_csv, 27, opciones_pregunta27)
-    print("FIN Histogramas de los Datos Demograficos\n")
+    print("FIN Histogramas de los Datos Demograficos")
+    print()
 
-# TODO
 def getHistogramaDiagnosticoAprendizajeQuimica(df_csv):
     # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
     opciones_pregunta13_1622_24 = ['nunca', 'casi nunca', 'a veces', 'casi siempre', 'siempre']
@@ -84,6 +116,7 @@ def getHistogramaDiagnosticoAprendizajeQuimica(df_csv):
     opciones_pregunta25 = ['nula', 'muy poca', 'baja', 'moderada', 'bastante']
     opciones_pregunta26 = ['muy malo', 'malo', 'ni bueno ni malo', 'bueno', 'muy bueno']
 
+    # * dichas preguntas son las de las columnas 13 -> 26
     print("INICIO Histogramas del diagnóstico respecto al aprendizaje de Química")
     histograma(df_csv, 13, opciones_pregunta13_1622_24)
     histograma(df_csv, 14, opciones_pregunta14)
@@ -95,6 +128,7 @@ def getHistogramaDiagnosticoAprendizajeQuimica(df_csv):
     histograma(df_csv, 25, opciones_pregunta25)
     histograma(df_csv, 26, opciones_pregunta26)
     print("FIN Histogramas del diagnóstico respecto al aprendizaje de Química")
+    print()
 
 def getDataFrameRespuestasCategoricasNormalizadas(df_csv):
     # normalizando preguntas con respuestas categoricas a minúsculas
@@ -108,13 +142,25 @@ def getDataFrameRespuestasCategoricasNormalizadas(df_csv):
             
     return df_normalizado
 
+def getSpanishStopWords():
+    stop_words = list(stopwords.words('spanish'))
+    return stop_words
+
+def getFilteredSpanishWords(texto):
+    stop_words = getSpanishStopWords()
+    texto.lower()
+    palabras = texto.split()
+    palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
+    return ' '.join(palabras_filtradas)
+
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
-    df_csv = pandas.read_csv(CSV_FILE)
+    df_csv = pandas.read_csv(CSV_FILE, encoding='utf-8')
     df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_csv)
 
     getHistogramaDatosDemograficos(df_normalizado)
     getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
+    getWordCloudOpinionesQuimica(df_normalizado)
 
 if __name__ == "__main__":
     main()

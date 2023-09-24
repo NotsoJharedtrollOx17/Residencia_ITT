@@ -3,7 +3,7 @@ import numpy
 
 
 def exploration(csv_file):
-    df = pandas.read_csv(csv_file)
+    df = pandas.read_csv(csv_file, encoding='utf-8')
     #print(df)
 
     # * Obtener las dimensiones de los datos (filas x columnas)
