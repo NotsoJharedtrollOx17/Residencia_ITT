@@ -8,7 +8,7 @@ def getSpanishStopWords():
     stop_words = list(stopwords.words('spanish'))
     return stop_words
 
-def getTemasDeRespuestas(idx ,df_csv, count, lda, nombre_pregunta, summary_file):
+def getTemasDeRespuestas(idx ,df_csv, count, lda, nombre_pregunta):
     datos = df_csv.values
     n_palabras_tema = 6
     descripcion_temas = []
@@ -19,6 +19,7 @@ def getTemasDeRespuestas(idx ,df_csv, count, lda, nombre_pregunta, summary_file)
     input_features_name = count.get_feature_names_out()
     output = lda.fit_transform(input_features)
 
+    # * despliegue de temas recurrentes
     print(f' \n{nombre_pregunta}')
     for tema_idx, tema in enumerate(lda.components_):
         palabras_tema = ' '.join([input_features_name[i]
@@ -42,6 +43,7 @@ def getTemasDeRespuestas(idx ,df_csv, count, lda, nombre_pregunta, summary_file)
         'summary': summary,
     }
 
+    # * estructura json de temas recurrentes
     return json_summary
 
 def main():
