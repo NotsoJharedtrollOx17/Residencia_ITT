@@ -1,5 +1,9 @@
 import pandas
+import numpy
 import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.cm import get_cmap
+from matplotlib.patches import Patch
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 
@@ -153,14 +157,100 @@ def getFilteredSpanishWords(texto):
     palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
     return ' '.join(palabras_filtradas)
 
+# TODO refactorizar para aceptar labels de las respuestas codificadas en getHistogramaDiagnosticoAprendizajeQuimica
+# * considerar extraer esos datos del metodo como una clase Singleton para no batallar
+def getIncidenciasTresPreguntas(df_csv):
+    
+    # ? ya despliega la grafica pero toda martajada...
+    df_csv = df_csv.copy()
+    nombre_columnas = df_csv.columns.tolist()
+
+    # ! SIEMPRE INCLUIR nombre_columna[1] que es el número de control
+    incidencia_interes = df_csv[[#nombre_columnas[1], 
+                                           nombre_columnas[3], 
+                                           nombre_columnas[4], 
+                                           nombre_columnas[5]]]
+    incidencia_interes['pivot'] = numpy.ones(39)
+
+    grupo_incidencias = incidencia_interes.groupby(by=[
+                                            nombre_columnas[3], 
+                                           nombre_columnas[4], 
+                                           nombre_columnas[5]]).count().unstack()
+
+    #print(grupo_incidencias.index.levels[0])
+    #print(grupo_incidencias.index.levels[1])
+    #print(grupo_incidencias.columns.levels[1])
+
+    #print("Columnas del CSV: ", df_csv.columns)
+    # * Revisar las incidencias detectadas
+    nombre_columnas_grupo = grupo_incidencias.columns.tolist()
+    print("Columnas en grupo_incidencias: ", grupo_incidencias.columns.levels[1])
+    # ** Despliega las etiquetas de la primer columna original de df_csv
+    print("Niveles de los indices 0: ", grupo_incidencias.index.levels[0])
+    # ** Despliega las etiquetas de la primer columna original de df_csv
+    print("Niveles de los indices 1: ", grupo_incidencias.index.levels[1])
+
+    # List of blood types, to use later as categories in subplots
+    # * Revisar nombres para labels de la gráfica
+    # ** Guarda las etiquetas de la tercer columna original de df_csv
+    kinds = grupo_incidencias.columns.levels[1] # TODO cambiar por las respuestas originales
+
+    # colors for bar graph
+    colors = [get_cmap('viridis')(v) for v in numpy.linspace(0,1,len(kinds))]
+
+    sns.set(context="talk")
+    nxplots = len(grupo_incidencias.index.levels[0])
+    print(nxplots)
+    nyplots = len(grupo_incidencias.index.levels[1])
+    print(nyplots)
+    fig, axes = plt.subplots(nxplots,
+                            nyplots,
+                            sharey=True,
+                            sharex=True,
+                            figsize=(10,12))
+
+    fig.suptitle('City, occupation, and blood type')
+
+    # plot the data
+    for a, b in enumerate(grupo_incidencias.index.levels[0]):
+        for i, j in enumerate(grupo_incidencias.index.levels[1]):
+            print(f"Intentando acceder a {b=}, {j=}")
+            axes[a,i].bar(kinds,grupo_incidencias.iloc[a,i],color=colors)
+            axes[a,i].xaxis.set_ticks([])
+
+    axeslabels = fig.add_subplot(111, frameon=False)
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    plt.grid(False)
+    axeslabels.set_ylabel('City',rotation='horizontal',y=1,weight="bold")
+    axeslabels.set_xlabel('Occupation',weight="bold")
+
+    # x- and y-axis labels
+    # ? por alguna razon, este no compila directamente las graficas de manera concreta
+    for i, j in enumerate(grupo_incidencias.index.levels[1]): # TODO cambiar enumerate por las respuestas originales
+            axes[nyplots-2,i].set_xlabel(j)
+    for i, j in enumerate(grupo_incidencias.index.levels[0]): # TODO cambiar enumerate por las respuestas originales
+        axes[i,0].set_ylabel(j)
+
+    # Tune this manually to make room for the legend
+    fig.subplots_adjust(right=0.82)
+
+    fig.legend([Patch(facecolor = i) for i in colors],
+            kinds,
+            title="Blood type",
+            loc="center right")
+    
+    plt.show()
+
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
     df_csv = pandas.read_csv(CSV_FILE, encoding='utf-8')
     df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_csv)
 
-    getHistogramaDatosDemograficos(df_normalizado)
-    getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
-    getWordCloudOpinionesQuimica(df_normalizado)
+    #getHistogramaDatosDemograficos(df_normalizado)
+    #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
+    #getWordCloudOpinionesQuimica(df_normalizado)
+
+    getIncidenciasTresPreguntas(df_normalizado)
 
 if __name__ == "__main__":
     main()
