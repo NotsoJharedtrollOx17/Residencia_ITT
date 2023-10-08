@@ -159,7 +159,11 @@ def getFilteredSpanishWords(texto):
 
 # TODO refactorizar para aceptar labels de las respuestas codificadas en getHistogramaDiagnosticoAprendizajeQuimica
 # * considerar extraer esos datos del metodo como una clase Singleton para no batallar
-def getIncidenciasTresPreguntas(df_csv):
+# * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
+def getHistogramaIncidenciasTresPreguntas(df_csv, 
+                                opciones_1rapregunta, 
+                                opciones_2dapregunta, 
+                                opciones_3rapregunta):
     
     # ? ya despliega la grafica pero toda martajada...
     df_csv = df_csv.copy()
@@ -180,43 +184,50 @@ def getIncidenciasTresPreguntas(df_csv):
     #print(grupo_incidencias.index.levels[0])
     #print(grupo_incidencias.index.levels[1])
     #print(grupo_incidencias.columns.levels[1])
-
     #print("Columnas del CSV: ", df_csv.columns)
+    #print(grupo_incidencias.to_string(index=True))
+
     # * Revisar las incidencias detectadas
+    max_value = int(grupo_incidencias.max().max())
     nombre_columnas_grupo = grupo_incidencias.columns.tolist()
-    print("Columnas en grupo_incidencias: ", grupo_incidencias.columns.levels[1])
-    # ** Despliega las etiquetas de la primer columna original de df_csv
-    print("Niveles de los indices 0: ", grupo_incidencias.index.levels[0])
-    # ** Despliega las etiquetas de la primer columna original de df_csv
-    print("Niveles de los indices 1: ", grupo_incidencias.index.levels[1])
 
     # List of blood types, to use later as categories in subplots
     # * Revisar nombres para labels de la gráfica
     # ** Guarda las etiquetas de la tercer columna original de df_csv
-    kinds = grupo_incidencias.columns.levels[1] # TODO cambiar por las respuestas originales
+    #labels_pregunta3 = ['Pri tt', 'Sec tt', 'Prepa/Bach tt', 'Lic tt', 'Posgrados']
 
     # colors for bar graph
-    colors = [get_cmap('viridis')(v) for v in numpy.linspace(0,1,len(kinds))]
+    colors = [get_cmap('viridis')(v) for v in numpy.linspace(0,1,len(nombre_columnas_grupo))]
 
     sns.set(context="talk")
-    nxplots = len(grupo_incidencias.index.levels[0])
-    print(nxplots)
-    nyplots = len(grupo_incidencias.index.levels[1])
-    print(nyplots)
+    nxplots = len(opciones_1rapregunta)
+    #print(nxplots)
+    nyplots = len(opciones_2dapregunta)
+    #print(nyplots)
     fig, axes = plt.subplots(nxplots,
                             nyplots,
                             sharey=True,
                             sharex=True,
-                            figsize=(10,12))
+                            figsize=(14,16))
 
-    fig.suptitle('City, occupation, and blood type')
+    fig.suptitle('City, occupation, and blood type') # TODO cambiar titulo de la gráfica
 
-    # plot the data
+    # grafica de los datos
     for a, b in enumerate(grupo_incidencias.index.levels[0]):
-        for i, j in enumerate(grupo_incidencias.index.levels[1]):
-            print(f"Intentando acceder a {b=}, {j=}")
-            axes[a,i].bar(kinds,grupo_incidencias.iloc[a,i],color=colors)
-            axes[a,i].xaxis.set_ticks([])
+        for i, j in enumerate(grupo_incidencias.columns.levels[1]):
+            try:
+                datos_combinacion = grupo_incidencias.loc[b, j]
+            except KeyError:
+                datos_combinacion = 0  # Asigna 0 si la combinación no existe
+            
+            axes[a, i].bar(opciones_3rapregunta, datos_combinacion, color=colors)
+            axes[a, i].xaxis.set_ticks([])
+
+    # tamaño de enumeración vertical de cada subplot
+    for a, b in enumerate(opciones_1rapregunta):
+        for i, j in enumerate(opciones_2dapregunta):
+            axes[a, i].set_yticks(range(0, max_value + 1))  # Aquí configuramos los ticks
+            axes[a, i].tick_params(axis='y', labelsize=10)  # Ajusta el tamaño de letra a tu preferencia (10 en este ejemplo)
 
     axeslabels = fig.add_subplot(111, frameon=False)
     plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
@@ -225,21 +236,22 @@ def getIncidenciasTresPreguntas(df_csv):
     axeslabels.set_xlabel('Occupation',weight="bold")
 
     # x- and y-axis labels
-    # ? por alguna razon, este no compila directamente las graficas de manera concreta
-    for i, j in enumerate(grupo_incidencias.index.levels[1]): # TODO cambiar enumerate por las respuestas originales
-            axes[nyplots-2,i].set_xlabel(j)
-    for i, j in enumerate(grupo_incidencias.index.levels[0]): # TODO cambiar enumerate por las respuestas originales
-        axes[i,0].set_ylabel(j)
+    # * para segunda pregunta...
+    for i, j in enumerate(opciones_2dapregunta): # TODO usar las abreviaciones para los casos particulares
+        axes[nyplots-1, i].set_xlabel(j)
+    # * para primer pregunta... 
+    for i, j in enumerate(opciones_1rapregunta):
+        axes[i, 0].set_ylabel(j)
 
     # Tune this manually to make room for the legend
     fig.subplots_adjust(right=0.82)
 
     fig.legend([Patch(facecolor = i) for i in colors],
-            kinds,
+            opciones_3rapregunta,
             title="Blood type",
             loc="center right")
     
-    plt.show()
+    plt.show() # TODO cambiar a plt.savefig(f"../results/plots/{nombre_archivo}")
 
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
@@ -250,7 +262,22 @@ def main():
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
 
-    getIncidenciasTresPreguntas(df_normalizado)
+    opciones_pregunta4 = [
+        "Clase Alta",
+        "Clase Media Alta",
+        "Clase Media",
+        "Clase Media Baja",
+        "Clase Baja",
+    ]
+    opciones_pregunta56 = [ # * pregunta 5 Y 6
+        "Primaria terminada o trunca",
+        "Secundaria terminada o trunca",
+        "Prepatoria/Bachillerato Técnico terminado o trunco",
+        "Licenciatura terminada o trunca",
+        "Posgrados (Maestría, Doctorado, etc.)",
+    ]
+
+    getHistogramaIncidenciasTresPreguntas(df_normalizado, opciones_pregunta4, opciones_pregunta56, opciones_pregunta56)
 
 if __name__ == "__main__":
     main()
