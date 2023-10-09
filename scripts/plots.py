@@ -144,7 +144,6 @@ def getFilteredSpanishWords(texto):
     palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
     return ' '.join(palabras_filtradas)
 
-# TODO revisar funcionamiento con cada incidencia para cmabiarlo a GUARDAR EN DISCO
 # * considerar extraer esos datos del metodo como una clase Singleton para no batallar
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
 def incidenciasTresPreguntas(df_csv, 
@@ -153,12 +152,11 @@ def incidenciasTresPreguntas(df_csv,
                                 opciones_3rapregunta,
                                 posiciones_preguntas):
 
+    # * utilizar parte de este método para plasmar incidencias en CSV
     sns.set(context="talk")
-    df_csv = df_csv.copy()
     nombre_archivo = f"incidencias_preguntas{posiciones_preguntas[0]}_{posiciones_preguntas[1]}_{posiciones_preguntas[2]}"
     nombre_columnas = df_csv.columns.tolist()
 
-    # ! SIEMPRE INCLUIR nombre_columna[1] que es el número de control
     incidencia_interes = df_csv[[#nombre_columnas[1], 
                                            nombre_columnas[posiciones_preguntas[0]], 
                                            nombre_columnas[posiciones_preguntas[1]], 
@@ -191,8 +189,6 @@ def incidenciasTresPreguntas(df_csv,
                             figsize=(14,16))
     fig.suptitle(f'Incidencias Pregunta {posiciones_preguntas[0]} \u2229 Pregunta {posiciones_preguntas[1]} \u2229 Pregunta{posiciones_preguntas[2]}')
 
-
-
     # * grafica de los datos
     for a, b in enumerate(grupo_incidencias.index.levels[0]): # * respuestas de la 1er. pregunta
         for i, j in enumerate(grupo_incidencias.index.levels[1]): # * respuestas de la  2da. pregunta
@@ -220,8 +216,8 @@ def incidenciasTresPreguntas(df_csv,
 
     # * etiquetas para los ejes de las subgraficas
     # * para segunda pregunta...
-    for i, j in enumerate(opciones_2dapregunta): # TODO usar las abreviaciones para los casos particulares
-        axes[nyplots-1, i].set_xlabel(j)
+    for i, j in enumerate(opciones_2dapregunta):
+        axes[nxplots-1, i].set_xlabel(j)
         #axes[nyplots-1, i].tick_params(axis='x', labelsize=9)  # Ajusta el tamaño de letra a tu preferencia (10 en este ejemplo)
     # * para primer pregunta... 
     for i, j in enumerate(opciones_1rapregunta):
@@ -236,7 +232,7 @@ def incidenciasTresPreguntas(df_csv,
             title=f"Pregunta {posiciones_preguntas[2]}",
             loc="center right")
     
-    plt.show() # TODO cambiar a plt.savefig(f"../results/plots/{nombre_archivo}")
+    plt.savefig(f"../results/plots/{nombre_archivo}")
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
@@ -274,31 +270,31 @@ def getIncidenciasEncuestaPreliminar(df_csv):
     opciones_pregunta26 = EncuestaPreliminar.getOpcionesPregunta26()
 
     print("INICIO Incidencias detectas en la Encuesta Preliminar")
-    print("Para la pregunta No 03: ")
+    print("Para la pregunta No 03: ") # * (4 INCIDENCIAS DE INTERES) ACOMODO CORRECTO 
     incidenciasTresPreguntas(df_csv, opciones_pregunta4, opciones_pregunta5_6, opciones_pregunta5_6, incidencias_interes[0])
     incidenciasTresPreguntas(df_csv, opciones_pregunta4, opciones_pregunta13_1622_24, opciones_pregunta14, incidencias_interes[1])
     incidenciasTresPreguntas(df_csv, opciones_pregunta4, opciones_pregunta15_23, opciones_pregunta13_1622_24, incidencias_interes[2])
     incidenciasTresPreguntas(df_csv, opciones_pregunta4, opciones_pregunta25, opciones_pregunta26, incidencias_interes[3])
-    print("Para la pregunta No 04: ")
+    print("Para la pregunta No 04: ") # * (3 INCIDENCIAS DE INTERES) ACOMODO CORRECTO 
     incidenciasTresPreguntas(df_csv, opciones_pregunta5_6, opciones_pregunta5_6, opciones_pregunta13_1622_24, incidencias_interes[4])
     incidenciasTresPreguntas(df_csv, opciones_pregunta5_6, opciones_pregunta5_6, opciones_pregunta25, incidencias_interes[5])
     incidenciasTresPreguntas(df_csv, opciones_pregunta5_6, opciones_pregunta5_6, opciones_pregunta26, incidencias_interes[6])
-    print("Para la pregunta No 06: ")
-    incidenciasTresPreguntas(df_csv, opciones_pregunta7, opciones_pregunta13_1622_24, opciones_pregunta14, incidencias_interes[8])
-    print("Para la pregunta No 12: ")
+    print("Para la pregunta No 06: ") # * (1 INCIDENCIA DE INTERES) ACOMODO CORRECTO
+    incidenciasTresPreguntas(df_csv, opciones_pregunta7, opciones_pregunta13_1622_24, opciones_pregunta14, incidencias_interes[7])
+    print("Para la pregunta No 12: ") # * (4 INCIDENCIAS DE INTERES) ACOMODO CORRECTO
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta15_23, incidencias_interes[8])
     incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta15_23, incidencias_interes[9])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta15_23, incidencias_interes[10])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta13_1622_24, incidencias_interes[11])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta26, incidencias_interes[12])
-    print("Para la pregunta No 14: ")
-    incidenciasTresPreguntas(df_csv, opciones_pregunta15_23, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, incidencias_interes[13])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta15_23, opciones_pregunta15_23, opciones_pregunta13_1622_24, incidencias_interes[14])
-    print("Para la pregunta No 17:")
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta15_23, incidencias_interes[15])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, incidencias_interes[16])
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta25, incidencias_interes[17])
-    print("Para la pregunta No 18: ")
-    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta15_23, incidencias_interes[18])
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta13_1622_24, incidencias_interes[10])
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta14, opciones_pregunta26, incidencias_interes[11])
+    print("Para la pregunta No 14: ") # * (2 INCIDENCIAS DE INTERES) ACOMODO CORRECTO
+    incidenciasTresPreguntas(df_csv, opciones_pregunta15_23, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, incidencias_interes[12])
+    incidenciasTresPreguntas(df_csv, opciones_pregunta15_23, opciones_pregunta15_23, opciones_pregunta13_1622_24, incidencias_interes[13])
+    print("Para la pregunta No 17:") # * (3 INCIDENCIAS DE INTERES) ACOMODO CORRECTO
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta15_23, incidencias_interes[14])
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, incidencias_interes[15])
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta25, incidencias_interes[16])
+    print("Para la pregunta No 18: ") # * (1 INCIDENCIA DE INTERES) ACOMODO CORRECTO
+    incidenciasTresPreguntas(df_csv, opciones_pregunta13_1622_24, opciones_pregunta13_1622_24, opciones_pregunta15_23, incidencias_interes[17])
     print("FIN Incidencias detectas en la Encuesta Preliminar")
 
 def main():
