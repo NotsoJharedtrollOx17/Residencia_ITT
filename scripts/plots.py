@@ -238,26 +238,7 @@ def incidenciasTresPreguntas(df_csv,
 
 def getIncidenciasEncuestaPreliminar(df_csv):
 
-    incidencias_interes = [
-        [3,4,5],
-        [3,12,13],
-        [3,22,23],
-        [3,24,25],
-        [4,5,20],
-        [4,5,24],
-        [4,5,25],
-        [6,12,13],
-        [12,13,14],
-        [12,13,22],
-        [12,13,23],
-        [12,13,25],
-        [14,20,21],
-        [14,22,23],
-        [17,18,22],
-        [17,18,23],
-        [17,18,24],
-        [18,19,22],
-    ]
+    incidencias_interes = EncuestaPreliminar.getIndicesIncidenciasInteres()
 
     # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
     opciones_pregunta4 = EncuestaPreliminar.getOpcionesPregunta4(abreviar=True)

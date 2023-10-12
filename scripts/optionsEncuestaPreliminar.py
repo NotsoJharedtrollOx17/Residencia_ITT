@@ -1,3 +1,40 @@
+def getIndicesIncidenciasInteres():
+    incidencias_interes = [
+        # * pregunta 3
+        [3,4,5],
+        [3,12,13],
+        [3,22,23],
+        [3,24,25],
+        
+        # * pregunta 4 y 5
+        [4,5,20],
+        [4,5,24],
+        [4,5,25],
+        
+        # * pregunta 6
+        [6,12,13],
+        
+        # * pregunta 12 y 13
+        [12,13,14],
+        [12,13,22],
+        [12,13,23],
+        [12,13,25],
+        
+        # * pregunta 14
+        [14,20,21],
+        [14,22,23],
+        
+        # * pregunta 17
+        [17,18,22],
+        [17,18,23],
+        [17,18,24],
+        
+        # * pregunta 18
+        [18,19,22],
+    ]
+
+    return incidencias_interes
+    
 def getOpcionesPregunta3():
     return ["17", "18", "19", "20", "21 o más"]
 

@@ -1,8 +1,23 @@
 import pandas
 import numpy
+import optionsEncuestaPreliminar as EncuestaPreliminar
 
+def explorationIncidenciasInteres(csv_file):
+    df = pandas.read_csv(csv_file, encoding='utf-8')
+    print("\tEXPLORACION DE INCIDENCIAS DE DATOS")
+    
+    # * Nombres de las preguntas para iterar alrededor de ellas
+    nombres_columnas = df.columns.tolist()
+    
+    incidencias_interes = EncuestaPreliminar.getIndicesIncidenciasInteres()
+    
+        # Iterar a través de las incidencias e imprimir las columnas correspondientes
+    for id_incidencia, incidencia in enumerate(incidencias_interes):
+        print(f"\nColumnas para la incidencia {id_incidencia+1}:")
+        for idx in incidencia:
+            print(f"•{idx}: {nombres_columnas[idx]}")    
 
-def exploration(csv_file):
+def explorationNombreColumnas(csv_file):
     df = pandas.read_csv(csv_file, encoding='utf-8')
     #print(df)
 
@@ -35,7 +50,8 @@ def exploration(csv_file):
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
 
-    exploration(CSV_FILE)
+    #explorationNombreColumnas(CSV_FILE)
+    explorationIncidenciasInteres(CSV_FILE)
 
 
 if __name__ == "__main__":
