@@ -13,7 +13,7 @@ def explorationIncidenciasInteres(csv_file):
     
         # Iterar a través de las incidencias e imprimir las columnas correspondientes
     for id_incidencia, incidencia in enumerate(incidencias_interes):
-        print(f"\nColumnas para la incidencia {id_incidencia+1}:")
+        print(f"\nColumnas para la incidencia {incidencia}:")
         for idx in incidencia:
             print(f"•{idx}: {nombres_columnas[idx]}")    
 
@@ -45,7 +45,6 @@ def explorationNombreColumnas(csv_file):
 
     #print(datos)
     #print(numpy.array(datos.tolist()))
-
 
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"

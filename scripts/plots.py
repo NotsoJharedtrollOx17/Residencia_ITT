@@ -1,8 +1,10 @@
 import pandas
 import numpy
 import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 import optionsEncuestaPreliminar as EncuestaPreliminar
+from matplotlib.cm import get_cmap
 from matplotlib.patches import Patch
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
@@ -179,7 +181,8 @@ def incidenciasTresPreguntas(df_csv,
     #labels_pregunta3 = ['Pri tt', 'Sec tt', 'Prepa/Bach tt', 'Lic tt', 'Posgrados']
 
     # * colors for bar graph
-    colors = ["royalblue", "darkorange", "limegreen", "mediumpurple", "indianred"]
+    #colors = ["royalblue", "darkorange", "limegreen", "mediumpurple", "indianred"]
+    colors = [get_cmap('viridis')(v) for v in np.linspace(0,1,len(grupo_incidencias.columns.levels[1]))]
     nxplots = len(opciones_1rapregunta)
     nyplots = len(opciones_2dapregunta)
     fig, axes = plt.subplots(nxplots,
@@ -190,8 +193,11 @@ def incidenciasTresPreguntas(df_csv,
     fig.suptitle(f'Incidencias Pregunta {posiciones_preguntas[0]} \u2229 Pregunta {posiciones_preguntas[1]} \u2229 Pregunta{posiciones_preguntas[2]}')
 
     # * grafica de los datos
-    for a, b in enumerate(grupo_incidencias.index.levels[0]): # * respuestas de la 1er. pregunta
-        for i, j in enumerate(grupo_incidencias.index.levels[1]): # * respuestas de la  2da. pregunta
+    # TODO problemas de graficación, no hay sentido en los datos
+    #for a, b in enumerate(grupo_incidencias.index.levels[0]): # * respuestas de la 1er. pregunta
+    #    for i, j in enumerate(grupo_incidencias.index.levels[1]): # * respuestas de la  2da. pregunta
+    for a, b in enumerate(opciones_1rapregunta): # * respuestas de la 1er. pregunta
+        for i, j in enumerate(opciones_2dapregunta): # * respuestas de la  2da. pregunta
             try:
                 datos_combinacion = grupo_incidencias.loc[b, j]
             except KeyError:
@@ -214,10 +220,12 @@ def incidenciasTresPreguntas(df_csv,
     axeslabels.set_ylabel(f'Pregunta {posiciones_preguntas[0]}', y=1.01, rotation='horizontal')
     axeslabels.set_xlabel(f'Pregunta {posiciones_preguntas[1]}', loc='center')
 
+    # TODO REVISAR LABELS DE GRAFICAS
     # * etiquetas para los ejes de las subgraficas
     # * para segunda pregunta...
     for i, j in enumerate(opciones_2dapregunta):
         axes[nxplots-1, i].set_xlabel(j)
+        # axes[nxplots-1, i].set_xlabel(j)
         #axes[nyplots-1, i].tick_params(axis='x', labelsize=9)  # Ajusta el tamaño de letra a tu preferencia (10 en este ejemplo)
     # * para primer pregunta... 
     for i, j in enumerate(opciones_1rapregunta):
