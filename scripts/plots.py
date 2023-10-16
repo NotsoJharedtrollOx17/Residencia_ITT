@@ -1,5 +1,4 @@
 import pandas
-import numpy
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
@@ -135,29 +134,6 @@ def getDataFrameRespuestasCategoricasNormalizadas(df_csv):
             
     return df_normalizado
 
-# TODO ARREGLAS METODO QUE CAMBIA FUNCIONAMIENTO DE INCIDENCIAS
-def getDataFrameRespuestasCategoricasAbreviadas(df_csv):
-    df_abreviado = df_csv.copy()
-    nombre_columnas = df_abreviado.columns.tolist()
-    nombre_columnas = nombre_columnas[4-1:5]
-
-    df_abreviado[nombre_columnas[0]] = df_abreviado[nombre_columnas[0]].apply(
-        lambda x: getAbreviacionesRespuestasIncidencias(x, 
-                                                        EncuestaPreliminar.getOpcionesPregunta4(), 
-                                                        EncuestaPreliminar.getOpcionesPregunta4(abreviar=True)))
-    
-    df_abreviado[nombre_columnas[1]] = df_abreviado[nombre_columnas[1]].apply(
-        lambda x: getAbreviacionesRespuestasIncidencias(x, 
-                                                        EncuestaPreliminar.getOpcionesPregunta5_6(), 
-                                                        EncuestaPreliminar.getOpcionesPregunta5_6(abreviar=True)))
-    
-    df_abreviado[nombre_columnas[2]] = df_abreviado[nombre_columnas[2]].apply(
-        lambda x: getAbreviacionesRespuestasIncidencias(x, 
-                                                        EncuestaPreliminar.getOpcionesPregunta5_6(), 
-                                                        EncuestaPreliminar.getOpcionesPregunta5_6(abreviar=True)))
-    
-    return df_abreviado
-
 def getSpanishStopWords():
     stop_words = list(stopwords.words('spanish'))
     return stop_words
@@ -168,18 +144,6 @@ def getFilteredSpanishWords(texto):
     palabras = texto.split()
     palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
     return ' '.join(palabras_filtradas)
-
-def getAbreviacionesRespuestasIncidencias(incidencias, originales, abreviaturas):
-    for incidencia in incidencias:
-        if incidencia in originales:
-            print(f"Incidencia: {incidencia}")
-            idx = originales.index(incidencia)
-            print(f"idx: {idx}")
-            abreviacion = abreviaturas[idx]
-            print(f"abreviacion: {abreviacion}")
-            return abreviacion
-        else:
-            return incidencia
 
 # * considerar extraer esos datos del metodo como una clase Singleton para no batallar
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
@@ -194,7 +158,7 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
                                            nombre_columnas[posiciones_preguntas[0]], 
                                            nombre_columnas[posiciones_preguntas[1]], 
                                            nombre_columnas[posiciones_preguntas[2]]]]
-    incidencia_interes['pivot'] = numpy.ones(39)
+    incidencia_interes['pivot'] = np.ones(39)
 
     grupo_incidencias = incidencia_interes.groupby(by=[
                                             nombre_columnas[posiciones_preguntas[0]], 
@@ -212,7 +176,6 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
                             figsize=(14,16))
     fig.suptitle(f'Incidencias Pregunta {posiciones_preguntas[0]} \u2229 Pregunta {posiciones_preguntas[1]} \u2229 Pregunta{posiciones_preguntas[2]}')
 
-    # TODO problemas de graficación, AHORA ABREVIAR CAUSA PROBLEMAS
     # * colors for bar graph
     colors = [cm.viridis(v) for v in np.linspace(0, 1, len(grupo_incidencias.columns.levels[1]))]
     
@@ -243,24 +206,66 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     axeslabels.set_ylabel(f'Pregunta {posiciones_preguntas[0]}', y=1.01, rotation='horizontal')
     axeslabels.set_xlabel(f'Pregunta {posiciones_preguntas[1]}', loc='center')
 
-    # TODO REVISAR LABELS DE GRAFICAS
     # * etiquetas para los ejes de las subgraficas
     # * para segunda pregunta...
-    for i, j in enumerate(grupo_incidencias.index.levels[1]):
-        print(f"(i ,j) : {(i, j)}")
-        axes[nyplots, i].set_xlabel(j)
-      
-    # * para primer pregunta... 
-    for i, j in enumerate(grupo_incidencias.index.levels[0]):
-        print(f"(i ,j) : {(i, j)}")
-        axes[i, 0].set_ylabel(j)
+    opciones_pregunta4 = EncuestaPreliminar.getOpcionesPregunta4()
+    opciones_pregunta5 = EncuestaPreliminar.getOpcionesPregunta5_6()
+    opciones_pregunta6 = EncuestaPreliminar.getOpcionesPregunta5_6()
+    abreviaciones_pregunta4 = EncuestaPreliminar.getOpcionesPregunta4(abreviar=True)
+    abreviaciones_pregunta5 = EncuestaPreliminar.getOpcionesPregunta5_6(abreviar=True)
+    abreviaciones_pregunta6 = EncuestaPreliminar.getOpcionesPregunta5_6(abreviar=True)
+    index = None
+    abreviacion = None
 
-    # * leyenda para la gráfica general
-    fig.subplots_adjust(right=0.82)
-    fig.legend([Patch(facecolor = i) for i in colors],
-            grupo_incidencias.columns.levels[1],
-            title=f"Pregunta {posiciones_preguntas[2]}",
-            loc="center right")
+    # * para segunda pregunta...
+    for i, j in enumerate(grupo_incidencias.index.levels[1]):
+        if posiciones_preguntas[1] == 4 or posiciones_preguntas[1] == 5:
+            j_lower = j.lower()  # Convertir a minúsculas
+            index = [opcion.lower() for opcion in opciones_pregunta5].index(j_lower)
+            abreviacion = abreviaciones_pregunta5[index]
+            axes[nxplots-1, i].set_xlabel(abreviacion)
+        else:
+            axes[nxplots-1, i].set_xlabel(j)
+
+    # * para primer pregunta...
+    for i, j in enumerate(grupo_incidencias.index.levels[0]):
+        j_lower = j.lower()  # Convertir a minúsculas
+        if posiciones_preguntas[0] == 3:    
+            index = [opcion.lower() for opcion in opciones_pregunta4].index(j_lower)
+            abreviacion = abreviaciones_pregunta4[index]
+            axes[i,0].set_ylabel(abreviacion)
+        elif posiciones_preguntas[0] == 4:
+            index = [opcion.lower() for opcion in opciones_pregunta5].index(j_lower)
+            abreviacion = abreviaciones_pregunta5[index]
+            axes[i,0].set_ylabel(abreviacion)
+        else:
+            axes[i,0].set_ylabel(j)
+
+    # * cuando tenemos "5" como tercer posición
+    if posiciones_preguntas[2] == 5:
+        abreviaciones = []
+        
+        for i, j in enumerate(grupo_incidencias.columns.levels[1]):
+            j_lower = j.lower()  # Convertir a minúsculas
+            index = [opcion.lower() for opcion in opciones_pregunta6].index(j_lower)
+            abreviacion = abreviaciones_pregunta6[index]
+            abreviaciones.append(abreviacion)
+
+        # * leyenda para la gráfica general
+        # * colors for bar graph
+        colors = [cm.viridis(v) for v in np.linspace(0, 1, len(abreviaciones))]
+        fig.subplots_adjust(right=0.82)
+        fig.legend([Patch(facecolor=i) for i in colors],
+                abreviaciones,
+                title=f"Pregunta {posiciones_preguntas[2]}",
+                loc="center right")
+    else:
+        # * leyenda para la gráfica general
+        fig.subplots_adjust(right=0.82)
+        fig.legend([Patch(facecolor=i) for i in colors],
+                grupo_incidencias.columns.levels[1],
+                title=f"Pregunta {posiciones_preguntas[2]}",
+                loc="center right")
     
     plt.savefig(f"../results/plots/{nombre_archivo}")
     plt.close()    
@@ -298,12 +303,10 @@ def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
     df_csv = pandas.read_csv(CSV_FILE, encoding='utf-8')
     df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_csv)
-    #df_abreviado = getDataFrameRespuestasCategoricasAbreviadas(df_normalizado)
 
     #getHistogramaDatosDemograficos(df_normalizado)
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
-    #getIncidenciasEncuestaPreliminar(df_abreviado) # ! NO SIRVE EL ABREVIADO ???
     getIncidenciasEncuestaPreliminar(df_normalizado) # * SI SIRVE EL NORMALIZADO
 
 if __name__ == "__main__":

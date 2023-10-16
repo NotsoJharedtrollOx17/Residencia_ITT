@@ -38,7 +38,31 @@ def getIndicesIncidenciasInteres():
 def getOpcionesPregunta3():
     return ["17", "18", "19", "20", "21 o más"]
 
-def getOpcionesPregunta4(abreviar=False):
+def getDiccionarioPregunta4(diccionario=False):
+    if diccionario:
+        opciones_pregunta4 = {
+            "C. Alta": "Clase Alta",
+            "C. Media Alta": "Clase Media Alta",
+            "C. Media": "Clase Media",
+            "C. Media Baja": "Clase Media Baja",
+            "C. Baja": "Clase Baja",
+        }
+        
+        return opciones_pregunta4
+
+def getDiccionarioPregunta5_6(diccionario=False):
+    if diccionario:
+            opciones_pregunta5_6 = {
+                "Pri tt": "Primaria terminada o trunca",
+                "Sec tt": "Secundaria terminada o trunca",
+                "Prepa/Bach tt": "Prepatoria/Bachillerato Técnico terminado o trunco",
+                "Lic tt": "Licenciatura terminada o trunca",
+                "Posgrados": "Posgrados (Maestría, Doctorado, etc.)",
+            }
+            
+            return opciones_pregunta5_6    
+
+def getOpcionesPregunta4(abreviar=False, ):
 
     if abreviar:
         return [
@@ -57,15 +81,21 @@ def getOpcionesPregunta4(abreviar=False):
             "Clase Baja",
         ]
 
-def getOpcionesPregunta5_6(abreviar=False):
-
+def getOpcionesPregunta5_6(abreviar=False, ):
+    
     if abreviar:
-        return ['Pri tt', 'Sec tt', 'Prepa/Bach tt', 'Lic tt', 'Posgrados']
+        return [
+            'Pri tt', 
+            'Sec tt', 
+            'Prepa/Bach tt', 
+            'Lic tt', 
+            'Posgrados'
+            ]
     else:
         return [ # * pregunta 5 Y 6
             "Primaria terminada o trunca",
             "Secundaria terminada o trunca",
-            "Prepatoria/Bachillerato Técnico terminado o trunco",
+            "Preparatoria/Bachillerato Técnico terminado o trunco",
             "Licenciatura terminada o trunca",
             "Posgrados (Maestría, Doctorado, etc.)",
         ]
