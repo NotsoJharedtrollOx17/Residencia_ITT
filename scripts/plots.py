@@ -305,9 +305,9 @@ def main():
     df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_csv)
 
     #getHistogramaDatosDemograficos(df_normalizado)
-    #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
+    getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
-    getIncidenciasEncuestaPreliminar(df_normalizado) # * SI SIRVE EL NORMALIZADO
+    #getIncidenciasEncuestaPreliminar(df_normalizado) # * SI SIRVE EL NORMALIZADO
 
 if __name__ == "__main__":
     main()

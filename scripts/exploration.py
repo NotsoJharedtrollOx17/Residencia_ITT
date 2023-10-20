@@ -33,7 +33,7 @@ def explorationNombreColumnas(csv_file):
 
     print("Nombres de las columnas:")
     for idx, nombre in enumerate(nombres_columnas):
-        print(f"•{idx}: {nombre}")
+        print(f"•{idx+1}: {nombre}")
 
     # * Prueba de acceso de nombre_columnas por medio de indices
     #print(nombres_columnas[3])
@@ -49,8 +49,8 @@ def explorationNombreColumnas(csv_file):
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
 
-    #explorationNombreColumnas(CSV_FILE)
-    explorationIncidenciasInteres(CSV_FILE)
+    explorationNombreColumnas(CSV_FILE)
+    #explorationIncidenciasInteres(CSV_FILE)
 
 
 if __name__ == "__main__":
