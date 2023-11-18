@@ -98,25 +98,92 @@ def explorationNumerosControlEncuestaTests(encuesta_csv_file,
                                             tests_grupo_control_csv_file, 
                                             tests_grupo_experimental_csv_file):
     
+    TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoControl.csv'
+    TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
+
     df_encuesta = pandas.read_csv(encuesta_csv_file, encoding='utf-8')
     df_grupo_control = pandas.read_csv(tests_grupo_control_csv_file, encoding='utf-8')
-    df__grupo_experimental = pandas.read_csv(tests_grupo_experimental_csv_file, encoding='utf-8')
+    df_grupo_experimental = pandas.read_csv(tests_grupo_experimental_csv_file, encoding='utf-8')
+    df_grupo_control['# Control'] = df_grupo_control['# Control'].astype(str)
+    df_grupo_experimental['# Control'] = df_grupo_experimental['# Control'].astype(str)
 
     # * concatenacion de los datos recabados en la realización del pre-test y post-test
-    df_tests = pandas.concat([df_grupo_control, df__grupo_experimental], axis=0)
+    df_tests = pandas.concat([df_grupo_control, df_grupo_experimental], axis=0)
 
     # * validacion a datos de tipo string para los numeros de control
     df_encuesta = pandas.DataFrame({'Número de control:': df_encuesta['Número de control:'].astype(str)})
+    #df_grupo_control = pandas.DataFrame({'# Control': df_grupo_control['# Control'].astype(str)})
+    #df_grupo_experimental = pandas.DataFrame({'# Control': df_grupo_experimental['# Control'].astype(str)})
     df_tests = pandas.DataFrame({'# Control': df_tests['# Control'].astype(str)})
 
-    # * Obtener una serie booleana que indica si cada número de control está en la encuesta
-    numeros_de_control_comunes = pandas.merge(df_encuesta, df_tests, how='outer', right_on='# Control', left_on='Número de control:', indicator=True)
-    #print(type(numeros_de_control_comunes))
+    # * Obtener datos de los participantes que SI respondieron la encuesta a tiempo
+    numeros_de_control_comunes = pandas.merge(df_encuesta, df_tests, 
+                                              how='outer', 
+                                              right_on='# Control', 
+                                              left_on='Número de control:', 
+                                              indicator=True)
+    
+    numeros_de_control_no_comunes = numeros_de_control_comunes[
+        numeros_de_control_comunes['Número de control:'].isna()]
+    
+    numeros_no_validos_grupo_control = df_grupo_control[
+        df_grupo_control['# Control'].
+        isin(numeros_de_control_no_comunes['# Control'])]
+    
+    numeros_no_validos_grupo_experimental = df_grupo_experimental[
+        df_grupo_experimental['# Control'].
+        isin(numeros_de_control_no_comunes['# Control'])] 
+
+    # * Obtener ... dentro del GRUPO CONTROL
+    numeros_validos_grupo_control = df_grupo_control[
+        ~df_grupo_control['# Control'].
+        isin(numeros_de_control_no_comunes['# Control'])]
+    
+    # * Obtener ... dentro del GRUPO EXPERIMENTAL
+    numeros_validos_grupo_experimental = df_grupo_experimental[
+        ~df_grupo_experimental['# Control'].
+        isin(numeros_de_control_no_comunes['# Control'])] 
+
+    # * cuantos pasaron y cuantos reprobaron
+        # * GRUPO CONTROL
+    cantidad_aprobados_control = numeros_validos_grupo_control[
+        numeros_validos_grupo_control['Aprobado/Reprobado'] == 'aprobado'].shape[0]
+    cantidad_reprobados_control = numeros_validos_grupo_control[
+        numeros_validos_grupo_control['Aprobado/Reprobado'] == 'reprobado'].shape[0]
+        # * GRUPO EXPERIMENTAL
+    cantidad_aprobados_experimental = numeros_validos_grupo_experimental[
+        numeros_validos_grupo_experimental['Aprobado/Reprobado'] == 'aprobado'].shape[0]
+    cantidad_reprobados_experimental = numeros_validos_grupo_experimental[
+        numeros_validos_grupo_experimental['Aprobado/Reprobado'] == 'reprobado'].shape[0]
 
     # * Mostrar los resultados
-    print("\nNúmeros de Control Válidos:")
-    print(numeros_de_control_comunes)
+    print("\nNúmeros de Control NO Válidos:")
+    print(numeros_de_control_no_comunes)
 
+    print("\nNúmeros de Control NO Válidos Grupo CONTROL")
+    print(numeros_no_validos_grupo_control)
+
+    print("\nNúmeros de Control NO Válidos Grupo EXPERIMENTAL")
+    print(numeros_no_validos_grupo_experimental)
+
+    print("\nNúmeros de Control Válidos Grupo CONTROL")
+    print(numeros_validos_grupo_control)
+
+    print("\nNúmeros de Control Válidos Grupo EXPERIMENTAL")
+    print(numeros_validos_grupo_experimental)
+
+    print(f"\n\n# APROBADOS GRUPO CONTROL: {cantidad_aprobados_control}")
+    print(f"\n# REPROBADOS GRUPO CONTROL: {cantidad_reprobados_control}")
+    print(f"\n# APROBADOS GRUPO EXPERIMENTAL: {cantidad_aprobados_experimental}")
+    print(f"\n# REPROBADOS GRUPO EXPERIMENTAL: {cantidad_reprobados_experimental}") 
+    
+    numeros_validos_grupo_control.to_csv(
+        TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, index=False)
+    print(f"\nCSV {TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE} realizado con éxito!")
+
+    numeros_validos_grupo_experimental.to_csv(
+        TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE, index=False)
+    print(f"CSV {TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE} realizado con éxito!")
     
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
