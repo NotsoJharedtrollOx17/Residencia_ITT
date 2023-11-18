@@ -4,56 +4,6 @@ import json
 import optionsEncuestaPreliminar as EncuestaPreliminar
 from time import time
 
-# TODO añadir el fragmento del JSON al método
-'''
-import pandas as pd
-import random
-import json
-
-def explorationGrupoControlGrupoExperimental(csv_file, output_file):
-    NOMBRE_COLUMNA = 'Número de control:'
-
-    df = pd.read_csv(csv_file, encoding='utf-8')
-
-    # Paso 1: Mezclar aleatoriamente los registros
-    df = df.sample(frac=1, random_state=42)
-
-    # Paso 2: Divide en grupo de control y grupo experimental
-    mitad = len(df) // 2
-
-    grupo_control = df.iloc[:mitad]
-    grupo_experimental = df.iloc[mitad:]
-
-    # Si quedó un registro sin asignar, puedes decidir cómo manejarlo. Por ejemplo, puedes incluirlo en el grupo de control:
-    if len(grupo_control) < len(grupo_experimental):
-        grupo_control = grupo_control.append(grupo_experimental.iloc[-1])
-        grupo_experimental = grupo_experimental.iloc[:-1]
-
-    listado_grupo_control = grupo_control[NOMBRE_COLUMNA].tolist()
-    listado_grupo_experimental = grupo_experimental[NOMBRE_COLUMNA].tolist()
-
-    # Guarda los listados en un archivo JSON
-    data = {
-        "Grupo de Control": listado_grupo_control,
-        "Grupo Experimental": listado_grupo_experimental
-    }
-
-    with open(output_file, 'w') as json_file:
-        json.dump(data, json_file, indent=4)
-
-    # Muestra los números de control para cada grupo
-    print("\nEXPLORACION DE GRUPO DE CONTROL Y GRUPO EXPERIMENTAL")
-    print("\nCONTROL")
-    for idx, ncontrol_control in enumerate(listado_grupo_control):
-        print(f"{ncontrol_control}")
-    print("\nEXPERIMENTAL")
-    for idx, ncontrol_exp in enumerate(listado_grupo_experimental):
-        print(f"{ncontrol_exp}")
-
-# Llama a la función pasando el archivo CSV y el nombre del archivo JSON de salida como argumentos
-explorationGrupoControlGrupoExperimental('tu_archivo.csv', 'salida.json')
-'''
-
 def explorationGrupoControlGrupoExperimental(csv_file):
     NOMBRE_COLUMNA = 'Número de control:'
     NOMBRE_JSON = '../results/summaries/Particion_GrupoControl_GrupoExperimental.json'
