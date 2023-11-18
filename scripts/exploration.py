@@ -94,12 +94,42 @@ def explorationNombreColumnas(csv_file):
     #print(datos)
     #print(numpy.array(datos.tolist()))
 
-def main():
-    CSV_FILE = "../csv/EncuestaPreliminar.csv"
+def explorationNumerosControlEncuestaTests(encuesta_csv_file, 
+                                            tests_grupo_control_csv_file, 
+                                            tests_grupo_experimental_csv_file):
+    
+    df_encuesta = pandas.read_csv(encuesta_csv_file, encoding='utf-8')
+    df_grupo_control = pandas.read_csv(tests_grupo_control_csv_file, encoding='utf-8')
+    df__grupo_experimental = pandas.read_csv(tests_grupo_experimental_csv_file, encoding='utf-8')
 
-    explorationNombreColumnas(CSV_FILE)
+    # * concatenacion de los datos recabados en la realización del pre-test y post-test
+    df_tests = pandas.concat([df_grupo_control, df__grupo_experimental], axis=0)
+
+    # * validacion a datos de tipo string para los numeros de control
+    df_encuesta = pandas.DataFrame({'Número de control:': df_encuesta['Número de control:'].astype(str)})
+    df_tests = pandas.DataFrame({'# Control': df_tests['# Control'].astype(str)})
+
+    # * Obtener una serie booleana que indica si cada número de control está en la encuesta
+    numeros_de_control_comunes = pandas.merge(df_encuesta, df_tests, how='outer', right_on='# Control', left_on='Número de control:', indicator=True)
+    #print(type(numeros_de_control_comunes))
+
+    # * Mostrar los resultados
+    print("\nNúmeros de Control Válidos:")
+    print(numeros_de_control_comunes)
+
+    
+def main():
+    ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
+    TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
+    TESTS_GRUPO_EXPERIMENTAL_CSV_FILE = "../csv/PreTestPostTest_grupoExperimental.csv"
+
+    #explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
     #explorationIncidenciasInteres(CSV_FILE)
     #explorationGrupoControlGrupoExperimental(CSV_FILE)
+
+    explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE,
+                                           TESTS_GRUPO_CONTROL_CSV_FILE,
+                                           TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
 
 if __name__ == "__main__":
     main()
