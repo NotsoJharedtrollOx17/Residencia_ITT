@@ -147,9 +147,9 @@ def explorationNombreColumnas(csv_file):
 def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
 
-    #explorationNombreColumnas(CSV_FILE)
+    explorationNombreColumnas(CSV_FILE)
     #explorationIncidenciasInteres(CSV_FILE)
-    explorationGrupoControlGrupoExperimental(CSV_FILE)
+    #explorationGrupoControlGrupoExperimental(CSV_FILE)
 
 if __name__ == "__main__":
     main()
