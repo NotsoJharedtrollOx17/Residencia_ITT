@@ -1,16 +1,20 @@
 import pandas
 import optionsEncuestaPreliminar as EncuestaPreliminar
 from scipy.stats import shapiro
+from scipy.stats import ttest_rel
+from scipy.stats import wilcoxon
 
 # TODO aplicar tests estadisticos para determinar eficacia del tratamiento.
 '''
-    2. Determinar la prueba estadística indicada para medir el impacto del tratamiento y y de la técnica original
     3. En base a lo anterior, elaborar la prueba estadística correspondiente
 '''
 
 def getNormality(df, labels):
     # * Prueba shapiro-Wilk para normalidad de los datos
-    pretest_posttest_normal = []
+    pretest_normal = None
+    posttest_normal = None
+    both_normal = None
+    test = ""
 
     for idx, label in enumerate(labels):
         print(f"\n{label}")
@@ -21,55 +25,143 @@ def getNormality(df, labels):
         # Interpretación
         alpha = 0.05
 
+        '''
+            H_0: Los datos ESTAN NORMALIZADOS
+            H_1: Los datos NO ESTAN NORMALIZADOS 
+        '''
         if p_value < alpha:
             print("La hipótesis nula de No-Normalidad entre los datos es rechazada.")
             print("Hay evidencia suficiente para afirmar que existe normalidad en los datos.")
             print("USAR Paired t-test\n")
-            pretest_posttest_normal.append(True)
+
+            if label == "Pre-Test":
+                pretest_normal = True
+            if label == "Post-Test":
+                posttest_normal = True
         else:
             print("No hay suficiente evidencia para rechazar la hipótesis nula.")
             print("No se puede afirmar que existe normalidad en los datos.")
             print("USAR Wilcoxon Signed test.\n")
-            pretest_posttest_normal.append(False)
 
-    both_normal = True if (pretest_posttest_normal[0] and pretest_posttest_normal[1]) else False
+            if label == "Pre-Test":
+                pretest_normal = False
+            if label == "Post-Test":
+                posttest_normal = False
+        
+    both_normal = pretest_normal and posttest_normal
 
     if both_normal:
         print("• USAR Paired t-test para EVALUAR GRUPO CONTROL!!!\n")
+        test = "paired"
     else:
         print("• USAR Wilcoxon Signed test para EVALUAR GRUPO EXPERIMENTAL!!!\n")
+        test = "wilcoxon"
 
-def getExistenciaNormalidadDatos(encuesta_csv_file, 
-                                            tests_grupo_control_csv_file, 
-                                            tests_grupo_experimental_csv_file):
+    return test
+
+def getExistenciaNormalidadDatos(df_grupo_control, 
+                                 df_grupo_experimental):
     
     PRETEST_POSTTEST_LABELS = ['Pre-Test', 'Post-Test']
 
-    #df_encuesta = pandas.read_csv(encuesta_csv_file, encoding='utf-8')
+    # * Resultados
+    print("EXISTENCIA DE NORMALIDAD EN DATOS DE GRUPO DE CONTROL")
+    test_control = getNormality(df_grupo_control, PRETEST_POSTTEST_LABELS)
+
+    print("EXISTENCIA DE NORMALIDAD EN DATOS DE GRUPO EXPERIMENTAL")
+    test_experimental = getNormality(df_grupo_experimental, PRETEST_POSTTEST_LABELS)
+
+    return test_control, test_experimental
+
+def getEstadisticaPairedT(df_grupo):
+
+    paired_t, p_value = ttest_rel(df_grupo['Pre-Test'], 
+                                  df_grupo['Post-Test'], 
+                                  alternative='less')
+    print(f"Estadística de prueba Paired-T: {paired_t}")
+    print(f"Valor p: {p_value}")
+
+    # Interpretación
+    alpha = 0.05
+
+    if p_value < alpha:
+        print("La hipótesis nula de NO MEJORIA es rechazada.")
+        print("Hay evidencia suficiente para afirmar que HUBO MEJORIA.\n")
+    else:
+        print("No hay suficiente evidencia para rechazar la hipótesis nula.")
+        print("No se puede afirmar que HUBO MEJORIA\n")
+    
+def getEstadisticaWilcoxon(df_grupo):
+    small_constant = 0.001
+    df_grupo['Pre-Test'] += small_constant
+    df_grupo['Post-Test'] += small_constant
+
+    _wilcoxon, p_value = wilcoxon(df_grupo['Pre-Test'], 
+                                  df_grupo['Post-Test'],
+                                  zero_method='zsplit', 
+                                  alternative='less')
+    print(f"Estadística de prueba Wilcoxon: {_wilcoxon}")
+    print(f"Valor p: {p_value}")
+
+    # Interpretación
+    alpha = 0.05
+
+    if p_value < alpha:
+        print("La hipótesis nula de NO MEJORIA es rechazada.")
+        print("Hay evidencia suficiente para afirmar que HUBO MEJORIA.\n")
+    else:
+        print("No hay suficiente evidencia para rechazar la hipótesis nula.")
+        print("No se puede afirmar que HUBO MEJORIA\n")
+
+def getPruebasEstadisticas(tests_grupo_control_csv_file, 
+                           tests_grupo_experimental_csv_file):
+
+    print("INICIO PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
+    # * lectura preliminar de CSV a dataframes para manipulacion mas facil
     df_grupo_control = pandas.read_csv(tests_grupo_control_csv_file, encoding='utf-8')
     df_grupo_experimental = pandas.read_csv(tests_grupo_experimental_csv_file, encoding='utf-8')
     df_grupo_control['# Control'] = df_grupo_control['# Control'].astype(str)
     df_grupo_experimental['# Control'] = df_grupo_experimental['# Control'].astype(str)
+    test_control, test_experimental = "", ""
 
-    # * Resultados
-    print("EXISTENCIA DE NORMALIDAD EN DATOS DE GRUPO DE CONTROL")
-    getNormality(df_grupo_control, PRETEST_POSTTEST_LABELS)
+    # * calculo de estadisticos descriptivos breves para estas dos columnas
+    descriptivos_control = df_grupo_control[['Pre-Test', 'Post-Test']].describe()
+    descriptivos_experimental = df_grupo_experimental[['Pre-Test', 'Post-Test']].describe()
 
-    print("EXISTENCIA DE NORMALIDAD EN DATOS DE GRUPO EXPERIMENTAL")
-    getNormality(df_grupo_experimental, PRETEST_POSTTEST_LABELS)
+    # * evaluación de normalidad en los datos para determinar el tipo de prueba estadística a aplicar en cada grupo
+    test_control, test_experimental = getExistenciaNormalidadDatos(df_grupo_control, df_grupo_experimental)
 
+    # * evaluación de los grupos de control y experimental con base al tipo de prueba...
+    '''
+        H_0: Pre-test >= Post-test (NO HAY MEJORA) 
+        H_1: Pre-test < Post-test  (HAY MEJORA)
+    '''
+    print("GRUPO CONTROL (ENSENANZA TRADICIONAL)\n")
+    print("DESCRIPTIVOS: ")
+    print(descriptivos_control)
+
+    if test_control == "paired":
+        getEstadisticaPairedT(df_grupo_control)
+    if test_control == "wilcoxon":
+        getEstadisticaWilcoxon(df_grupo_control)
+
+    print("GRUPO EXPERIMENTAL (HERRAMIENTAS DIGITALES)\n")
+    print("DESCRIPTIVOS: ")
+    print(descriptivos_experimental)
+    
+    if test_experimental == "paired":
+        getEstadisticaPairedT(df_grupo_experimental)
+    if test_experimental == "wilcoxon":
+        getEstadisticaWilcoxon(df_grupo_experimental)
+    print("FIN PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
 
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoControl.csv'
     TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
-    
-    print("lorem ipsum dolor")
 
-    #shapiroWilkTest()
+    getPruebasEstadisticas(TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE)
 
-    getExistenciaNormalidadDatos(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE)
 
 if __name__ == '__main__':
-
     main()
