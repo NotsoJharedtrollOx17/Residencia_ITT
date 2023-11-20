@@ -81,7 +81,7 @@ def explorationNombreColumnas(csv_file):
 
     print("Nombres de las columnas:")
     for idx, nombre in enumerate(nombres_columnas):
-        print(f"•{idx+1}: {nombre}")
+        print(f"•{idx}: {nombre}")
 
     # * Prueba de acceso de nombre_columnas por medio de indices
     #print(nombres_columnas[3])
@@ -190,13 +190,10 @@ def main():
     TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
     TESTS_GRUPO_EXPERIMENTAL_CSV_FILE = "../csv/PreTestPostTest_grupoExperimental.csv"
 
-    #explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
-    #explorationIncidenciasInteres(CSV_FILE)
-    #explorationGrupoControlGrupoExperimental(CSV_FILE)
-
-    explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE,
-                                           TESTS_GRUPO_CONTROL_CSV_FILE,
-                                           TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
+    explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
+    #explorationIncidenciasInteres(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
+    #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
+    #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
 
 if __name__ == "__main__":
     main()
