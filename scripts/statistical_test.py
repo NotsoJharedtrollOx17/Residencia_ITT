@@ -1,13 +1,11 @@
 import pandas
+import math
 from scipy.stats import shapiro
 from scipy.stats import ttest_rel
 from scipy.stats import wilcoxon
 from scipy.stats import fisher_exact
 
-# TODO aplicar tests estadisticos para determinar eficacia del tratamiento.
-'''
-    3. En base a lo anterior, elaborar la prueba estadística correspondiente
-'''
+# TODO obtener porcentajes de aprobacion despues de haberse aplicado el post-test
 
 def getNormality(df, labels):
     # * Prueba shapiro-Wilk para normalidad de los datos
@@ -155,6 +153,31 @@ def getEstadisticaFisher(df_grupo):
         print("No hay suficiente evidencia para rechazar la hipótesis nula.")
         print("No se puede afirmar que existe una fuerte asociacion entre los resultados del pre-test y del post-test.")
 
+def getPorcentajesAprobaciónPostTest(df_grupo_control, df_grupo_experimental):
+    # * obteniendo el numero de registros (n_rows_control, n_rows_experimental)
+    n_rows_control, n_columns_control = df_grupo_control.shape
+    n_rows_experimental, n_columns_experimental = df_grupo_experimental.shape
+
+    # * ... de aprobados en el post-test
+    n_aprobados_control = df_grupo_control['Aprobado_Post-Test'].value_counts()['aprobado']
+    n_aprobados_experimental = df_grupo_experimental['Aprobado_Post-Test'].value_counts()['aprobado']
+
+    # * porcentaje..
+    porcentaje_aprobados_control = round(((n_aprobados_control / n_rows_control) * 100), 2)
+    porcentaje_aprobados_experimental = round(((n_aprobados_experimental / n_rows_experimental) * 100), 2)
+
+    index = ['Control', 'Experimental']
+    datos = {
+        'total_muestra': [n_rows_control, n_rows_experimental],
+        'total_aprobados': [n_aprobados_control, n_aprobados_experimental],
+        'porcentaje_aprobados': [porcentaje_aprobados_control, porcentaje_aprobados_experimental]
+    }
+
+    df_datos_aprobacion = pandas.DataFrame(datos, index=index)
+    df_datos_aprobacion = df_datos_aprobacion.transpose()
+
+    print(df_datos_aprobacion)
+
 def getPruebasEstadisticas(tests_grupo_control_csv_file, 
                            tests_grupo_experimental_csv_file):
 
@@ -198,6 +221,9 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
     if test_experimental == "wilcoxon":
         getEstadisticaWilcoxon(df_grupo_experimental)
     getEstadisticaFisher(df_grupo_experimental)
+
+    print("PORCENTAJES DE APROBACION APLICADO EL POST-TEST")
+    getPorcentajesAprobaciónPostTest(df_grupo_control, df_grupo_experimental)
 
     print("FIN PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
 
