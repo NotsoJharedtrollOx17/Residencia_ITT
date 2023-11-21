@@ -1,8 +1,8 @@
 import pandas
-import optionsEncuestaPreliminar as EncuestaPreliminar
 from scipy.stats import shapiro
 from scipy.stats import ttest_rel
 from scipy.stats import wilcoxon
+from scipy.stats import fisher_exact
 
 # TODO aplicar tests estadisticos para determinar eficacia del tratamiento.
 '''
@@ -74,11 +74,15 @@ def getExistenciaNormalidadDatos(df_grupo_control,
     return test_control, test_experimental
 
 def getEstadisticaPairedT(df_grupo):
+    # * para evitar celdas con ceros ; se aplica a TODOS LOS VALORES
+    small_constant = 1
+    df_grupo['Pre-Test'] += small_constant
+    df_grupo['Post-Test'] += small_constant
 
     paired_t, p_value = ttest_rel(df_grupo['Pre-Test'], 
                                   df_grupo['Post-Test'], 
                                   alternative='less')
-    print(f"Estadística de prueba Paired-T: {paired_t}")
+    print(f"\nEstadística de prueba Paired-T: {paired_t}")
     print(f"Valor p: {p_value}")
 
     # Interpretación
@@ -92,7 +96,8 @@ def getEstadisticaPairedT(df_grupo):
         print("No se puede afirmar que HUBO MEJORIA\n")
     
 def getEstadisticaWilcoxon(df_grupo):
-    small_constant = 0.001
+    # * para evitar celdas con ceros ; se aplica a TODOS LOS VALORES
+    small_constant = 1
     df_grupo['Pre-Test'] += small_constant
     df_grupo['Post-Test'] += small_constant
 
@@ -100,7 +105,7 @@ def getEstadisticaWilcoxon(df_grupo):
                                   df_grupo['Post-Test'],
                                   zero_method='zsplit', 
                                   alternative='less')
-    print(f"Estadística de prueba Wilcoxon: {_wilcoxon}")
+    print(f"\nEstadística de prueba Wilcoxon: {_wilcoxon}")
     print(f"Valor p: {p_value}")
 
     # Interpretación
@@ -113,10 +118,48 @@ def getEstadisticaWilcoxon(df_grupo):
         print("No hay suficiente evidencia para rechazar la hipótesis nula.")
         print("No se puede afirmar que HUBO MEJORIA\n")
 
+def getEstadisticaFisher(df_grupo):
+
+    reprobado_pretest_reprobado_posttest = ((df_grupo['Aprobado_Pre-Test'] == 'reprobado') & (df_grupo['Aprobado_Post-Test'] == 'reprobado')).sum()
+    reprobado_pretest_aprobado_posttest = ((df_grupo['Aprobado_Pre-Test'] == 'reprobado') & (df_grupo['Aprobado_Post-Test'] == 'aprobado')).sum()
+    aprobado_pretest_reprobado_posttest = ((df_grupo['Aprobado_Pre-Test'] == 'aprobado') & (df_grupo['Aprobado_Post-Test'] == 'reprobado')).sum()
+    aprobado_pretest_aprobado_posttest = ((df_grupo['Aprobado_Pre-Test'] == 'aprobado') & (df_grupo['Aprobado_Post-Test'] == 'aprobado')).sum()
+
+    '''
+        PRE-TEST/POST-TEST  REPROBADO APROBADO
+                 REPROBADO     o_1      o_2
+        
+                 APROBADO      o_3      o_4
+    '''
+    # * para evitar celdas con ceros ; se aplica a TODOS LOS VALORES
+    small_constant = 1
+    fisher, p_value = fisher_exact([[reprobado_pretest_reprobado_posttest+small_constant, 
+                                     reprobado_pretest_aprobado_posttest+small_constant],
+                                    [aprobado_pretest_reprobado_posttest+small_constant,
+                                     aprobado_pretest_aprobado_posttest+small_constant]])
+    
+    print(f"Estadística de prueba Fisher Exact: {fisher}")
+    print(f"Valor p: {p_value}")
+
+        # Interpretación
+    alpha = 0.05
+
+    '''
+        H_0: NO EXISTE UNA FUERTE ASOCIACION entre los resultados del pre-test y del post-test
+        H_1: SI EXISTE UNA FUERTE ASOCIACION entre los resultados...
+    '''
+    if p_value < alpha:
+        print("La hipótesis nula de NO ASOCIACION es rechazada")
+        print("Hay evidencia suficiente para afirmar que SI EXISTE UNA FUERTE ASOCIACION entre los resultados del pre-test y del post-test")        
+    else:
+        print("No hay suficiente evidencia para rechazar la hipótesis nula.")
+        print("No se puede afirmar que existe una fuerte asociacion entre los resultados del pre-test y del post-test.")
+
 def getPruebasEstadisticas(tests_grupo_control_csv_file, 
                            tests_grupo_experimental_csv_file):
 
     print("INICIO PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
+    
     # * lectura preliminar de CSV a dataframes para manipulacion mas facil
     df_grupo_control = pandas.read_csv(tests_grupo_control_csv_file, encoding='utf-8')
     df_grupo_experimental = pandas.read_csv(tests_grupo_experimental_csv_file, encoding='utf-8')
@@ -144,6 +187,7 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
         getEstadisticaPairedT(df_grupo_control)
     if test_control == "wilcoxon":
         getEstadisticaWilcoxon(df_grupo_control)
+    getEstadisticaFisher(df_grupo_control)
 
     print("GRUPO EXPERIMENTAL (HERRAMIENTAS DIGITALES)\n")
     print("DESCRIPTIVOS: ")
@@ -153,6 +197,8 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
         getEstadisticaPairedT(df_grupo_experimental)
     if test_experimental == "wilcoxon":
         getEstadisticaWilcoxon(df_grupo_experimental)
+    getEstadisticaFisher(df_grupo_experimental)
+
     print("FIN PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
 
 def main():
@@ -161,7 +207,6 @@ def main():
     TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
 
     getPruebasEstadisticas(TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE)
-
 
 if __name__ == '__main__':
     main()
