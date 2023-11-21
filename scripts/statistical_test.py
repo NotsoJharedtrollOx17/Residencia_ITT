@@ -5,8 +5,6 @@ from scipy.stats import ttest_rel
 from scipy.stats import wilcoxon
 from scipy.stats import fisher_exact
 
-# TODO obtener porcentajes de aprobacion despues de haberse aplicado el post-test
-
 def getNormality(df, labels):
     # * Prueba shapiro-Wilk para normalidad de los datos
     pretest_normal = None
@@ -153,24 +151,31 @@ def getEstadisticaFisher(df_grupo):
         print("No hay suficiente evidencia para rechazar la hipótesis nula.")
         print("No se puede afirmar que existe una fuerte asociacion entre los resultados del pre-test y del post-test.")
 
+# TODO guardar df_datos_aprobacion como CSV
 def getPorcentajesAprobaciónPostTest(df_grupo_control, df_grupo_experimental):
     # * obteniendo el numero de registros (n_rows_control, n_rows_experimental)
     n_rows_control, n_columns_control = df_grupo_control.shape
     n_rows_experimental, n_columns_experimental = df_grupo_experimental.shape
+    n_poblacion = n_rows_control + n_rows_experimental
 
     # * ... de aprobados en el post-test
     n_aprobados_control = df_grupo_control['Aprobado_Post-Test'].value_counts()['aprobado']
     n_aprobados_experimental = df_grupo_experimental['Aprobado_Post-Test'].value_counts()['aprobado']
 
     # * porcentaje..
-    porcentaje_aprobados_control = round(((n_aprobados_control / n_rows_control) * 100), 2)
-    porcentaje_aprobados_experimental = round(((n_aprobados_experimental / n_rows_experimental) * 100), 2)
+    porcentaje_aprobados_grupo_control = round(((n_aprobados_control / n_rows_control) * 100), 2)
+    porcentaje_aprobados_grupo_experimental = round(((n_aprobados_experimental / n_rows_experimental) * 100), 2)
+    porcentaje_aprobados_poblacion_control = round(((n_aprobados_control / n_poblacion) * 100), 2)
+    porcentaje_aprobados_poblacion_experimental = round(((n_aprobados_experimental / n_poblacion) * 100), 2)
 
     index = ['Control', 'Experimental']
     datos = {
         'total_muestra': [n_rows_control, n_rows_experimental],
-        'total_aprobados': [n_aprobados_control, n_aprobados_experimental],
-        'porcentaje_aprobados': [porcentaje_aprobados_control, porcentaje_aprobados_experimental]
+        'total_aprobados_grupo': [n_aprobados_control, n_aprobados_experimental],
+        'porcentaje_aprobados_grupo': [f"{porcentaje_aprobados_grupo_control}% ({n_aprobados_control}/{n_rows_control})", 
+                                       f"{porcentaje_aprobados_grupo_experimental}% ({n_aprobados_experimental}/{n_rows_experimental})"],
+        'porcentaje_aprobados_poblacion': [f"{porcentaje_aprobados_poblacion_control}% ({n_aprobados_control}/{n_poblacion})", 
+                                       f"{porcentaje_aprobados_poblacion_experimental}% ({n_aprobados_experimental}/{n_poblacion})"],
     }
 
     df_datos_aprobacion = pandas.DataFrame(datos, index=index)
@@ -191,10 +196,13 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
     test_control, test_experimental = "", ""
 
     # * calculo de estadisticos descriptivos breves para estas dos columnas
+        # TODO guardar estidisticos como CSV para explicar los datos
     descriptivos_control = df_grupo_control[['Pre-Test', 'Post-Test']].describe()
     descriptivos_experimental = df_grupo_experimental[['Pre-Test', 'Post-Test']].describe()
 
     # * evaluación de normalidad en los datos para determinar el tipo de prueba estadística a aplicar en cada grupo
+        # TODO modificar script para guardar los datos solicitados como JSON, incluyendo las hipotesis aceptadas, los p valores, y las pruebas estadisticas utilizadas
+        # * debe ser un solo archivo para evitar complicaciones.
     test_control, test_experimental = getExistenciaNormalidadDatos(df_grupo_control, df_grupo_experimental)
 
     # * evaluación de los grupos de control y experimental con base al tipo de prueba...
