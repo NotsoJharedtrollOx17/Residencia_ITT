@@ -144,18 +144,6 @@ def explorationNumerosControlEncuestaTests(encuesta_csv_file,
         ~df_grupo_experimental['# Control'].
         isin(numeros_de_control_no_comunes['# Control'])] 
 
-    # * cuantos pasaron y cuantos reprobaron
-        # * GRUPO CONTROL
-    cantidad_aprobados_control = numeros_validos_grupo_control[
-        numeros_validos_grupo_control['Aprobado/Reprobado'] == 'aprobado'].shape[0]
-    cantidad_reprobados_control = numeros_validos_grupo_control[
-        numeros_validos_grupo_control['Aprobado/Reprobado'] == 'reprobado'].shape[0]
-        # * GRUPO EXPERIMENTAL
-    cantidad_aprobados_experimental = numeros_validos_grupo_experimental[
-        numeros_validos_grupo_experimental['Aprobado/Reprobado'] == 'aprobado'].shape[0]
-    cantidad_reprobados_experimental = numeros_validos_grupo_experimental[
-        numeros_validos_grupo_experimental['Aprobado/Reprobado'] == 'reprobado'].shape[0]
-
     # * Mostrar los resultados
     print("\nNúmeros de Control NO Válidos:")
     print(numeros_de_control_no_comunes)
@@ -171,11 +159,6 @@ def explorationNumerosControlEncuestaTests(encuesta_csv_file,
 
     print("\nNúmeros de Control Válidos Grupo EXPERIMENTAL")
     print(numeros_validos_grupo_experimental)
-
-    print(f"\n\n# APROBADOS GRUPO CONTROL: {cantidad_aprobados_control}")
-    print(f"\n# REPROBADOS GRUPO CONTROL: {cantidad_reprobados_control}")
-    print(f"\n# APROBADOS GRUPO EXPERIMENTAL: {cantidad_aprobados_experimental}")
-    print(f"\n# REPROBADOS GRUPO EXPERIMENTAL: {cantidad_reprobados_experimental}") 
     
     numeros_validos_grupo_control.to_csv(
         TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, index=False)
@@ -190,10 +173,10 @@ def main():
     TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
     TESTS_GRUPO_EXPERIMENTAL_CSV_FILE = "../csv/PreTestPostTest_grupoExperimental.csv"
 
-    explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
+    #explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
     #explorationIncidenciasInteres(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
     #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
-    #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
+    explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
 
 if __name__ == "__main__":
     main()
