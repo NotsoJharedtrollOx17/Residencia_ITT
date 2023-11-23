@@ -1,0 +1,53 @@
+6. Temario
+No.
+
+Temas
+Subtemas
+1 Materia, estructura y periodicidad
+1.1 Materia, estructura, composición estados de agregación y clasificación por propiedades.
+1.2 Periodicidad química.
+1.3 Elementos de importancia económica, industrial y ambiental en la región o en el país.
+
+2 Enlaces químicos y el estado sólido
+2.1 Introducción.
+2.2 Símbolos de Lewis y regla del octeto.
+2.3 Enlace iónico
+2.4 Enlace covalente.
+2.5 Enlace metálico y elementos semiconductores.
+2.6 Fuerzas intermoleculares y propiedades
+físicas.
+2.7 Estructura de los materiales.
+
+3 Cristalografía
+3.1 Planos cristalográficos.
+3.2 Índices de Miller.
+3.3 Direcciones de celda.
+3.4 Notación de planos.
+3.5 Ley de Schmidt.
+3.6 Difusión.
+3.7 Primera y segunda ley de fick.
+
+4 Reacciones generales y estequiometría
+4.1 Clasificación de las reacciones.
+4.2 Balanceo de reacciones químicas.
+4.3 Leyes estequiométricas.
+4.4 Cálculos estequiométricos: relación peso-
+peso, relación peso-volumen.
+
+5 Estado líquido. soluciones y coloides
+5.1 Estado líquido.
+5.2 Soluciones.
+5.3 Coloides.
+5.4 Estequiometría en soluciones acuosas.
+
+6 Termoquímica y electroquímica
+6.1 Termoquímica
+6.2 Electroquímica.
+
+7 Equilibrio químico
+7.1 Cinética química: velocidades de reacción y el mecanismo de reacción.
+7.2 La constante de equilibrio.
+7.3 Principio de Le Chatelier.
+7.4 Constante de ionización.
+7.5 Producto de solubilidad.
+7.6 Soluciones amortiguadoras.

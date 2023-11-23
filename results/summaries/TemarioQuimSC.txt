@@ -1,0 +1,68 @@
+1 Teoría cuántica y estructura atómica
+1.1. El átomo y sus partículas subatómicas.
+1.1.1. Rayos catódicos y rayos anódicos.
+1.1.2. Radiactividad.
+1.2. Base experimental de la teoría cuántica.
+1.2.1. Teoría ondulatoria de la luz.
+1.2.2. Radiación del cuerpo negro y teoría de Planck.
+1.2.3. Efecto fotoeléctrico.
+1.2.4. Espectros de emisión y series espectrales.
+1.3. Teoría atómica de Bohr.
+1.3.1. Teoría atómica de Bohr-Sommerfeld.
+1.4. Teoría cuántica.
+1.4.1. Principio de dualidad. Postulado de De Broglie.
+1.4.2. Principio de incertidumbre de Heisenberg.
+1.4.3. Ecuación de onda de Schrödinger.
+1.4.3.1. Significado físico de la función de onda y números cuánticos y orbitales atómicos.
+1.5. Distribución electrónica en sistemas polielectrónicos.
+1.5.1. Principio de Aufbau o de construcción.
+1.5.2. Principio de exclusión de Pauli.
+1.5.3. Principio de máxima multiplicidad de Hund.
+1.5.4. Configuración electrónica de los elementos y su ubicación en la clasificación periódica.
+1.5.5. Principios de radiactividad.
+1.6. Aplicaciones tecnológicas de la emisión electrónica de los átomos.
+
+2 Elementos químicos y su clasificación
+2.1. Características de la clasificación periódica moderna de los elementos.
+2.1.1. Tabla periódica larga y tabla cuántica.
+2.2. Propiedades atómicas y su variación periódica.
+2.2.1. Carga nuclear efectiva.
+2.2.2. Radio atómico, radio covalente, radio iónico.
+2.2.3. Energía de ionización.
+2.2.4. Afinidad electrónica.
+2.2.5. Número de oxidación.
+2.2.6. Electronegatividad.
+2.3. Aplicación: Impacto económico o ambiental de algunos elementos.
+2.3.1. Abundancia de los elementos en la naturaleza.
+2.3.2. Elementos de importancia económica.
+2.3.3. Elementos contaminantes.
+
+3 Enlaces químicos
+3.1. Introducción.
+3.1.1. Concepto de enlace químico.
+3.1.2. Clasificación de los enlaces químicos.
+3.1.3. Aplicaciones y limitaciones de la regla del octeto.
+3.2. Enlace covalente.
+3.2.1. Teorías para explicar el enlace covalente y sus alcances.
+3.2.1.1. Teorías del enlace de valencia.
+3.2.1.2. Hibridación y geometría molecular.
+3.2.1.3. Teoría del orbital molecular.
+3.3. Enlace iónico.
+3.3.1. Formación y propiedades de los compuestos iónicos.
+3.3.2. Redes cristalinas.
+3.3.2.1. Estructura.
+3.3.2.2. Energía reticular.
+
+4 Reacciones químicas
+4.1. Combinación.
+4.2. Descomposición.
+4.3. Sustitución (simple y doble).
+4.4. Neutralización.
+4.5. Óxido-Reducción.
+4.6. Aplicaciones.
+4.7. Cálculos estequiométricos con reacciones químicas.
+4.7.1. Reacción óxido reducción en una celda electroquímica.
+4.7.2. Cálculo de la fuerza electromotriz (fem) y potenciales de óxido reducción.
+4.7.3. Electrodepósito (cálculo de electrodepósito).
+4.7.4. Aplicaciones de electroquímica en electrónica.
+4.7.5. Nanoquímica (propiedades fisicoquímicas no convencionales de polímeros, catenanos y rotaxanos).
