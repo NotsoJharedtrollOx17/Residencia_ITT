@@ -1,5 +1,4 @@
 import pandas
-import math
 from scipy.stats import shapiro
 from scipy.stats import ttest_rel
 from scipy.stats import wilcoxon
@@ -151,7 +150,6 @@ def getEstadisticaFisher(df_grupo):
         print("No hay suficiente evidencia para rechazar la hipótesis nula.")
         print("No se puede afirmar que existe una fuerte asociacion entre los resultados del pre-test y del post-test.")
 
-# TODO guardar df_datos_aprobacion como CSV
 def getPorcentajesAprobaciónPostTest(df_grupo_control, df_grupo_experimental):
     # * obteniendo el numero de registros (n_rows_control, n_rows_experimental)
     n_rows_control, n_columns_control = df_grupo_control.shape

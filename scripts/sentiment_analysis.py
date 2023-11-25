@@ -1,9 +1,14 @@
 import pandas
 import json
 import g4f
+import nltk
 from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
+
+def downloadStopWords():
+    nltk.download('stopwords')
+    print('STOPWORDS descargadas con éxito')
 
 def getSpanishStopWords():
     stop_words = list(stopwords.words('spanish'))
@@ -111,6 +116,8 @@ def main():
     CSV_FILE = "../csv/EncuestaPreliminar.csv"
 
     df_csv = pandas.read_csv(CSV_FILE, encoding='utf-8')
+
+    downloadStopWords()
 
     count = CountVectorizer(stop_words=getSpanishStopWords(),
                             max_df=0.1,
