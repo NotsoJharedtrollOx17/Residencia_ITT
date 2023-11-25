@@ -217,6 +217,7 @@ def explorationBigMergedDataset(encuesta_csv_file):
     # * ordenación de campos para mayor legibilidad
     df_big_merged_dataset.insert(0, 'ID Grupo', df_big_merged_dataset.pop('ID Grupo'))
     df_big_merged_dataset.insert(0, '# Control', df_big_merged_dataset.pop('# Control'))
+    df_big_merged_dataset.insert(2, 'Seleccione su identidad de género:', df_big_merged_dataset.pop('Seleccione su identidad de género:'))
 
     # * generacion de CSV del merge
     df_big_merged_dataset.to_csv(
