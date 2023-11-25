@@ -83,17 +83,6 @@ def explorationNombreColumnas(csv_file):
     for idx, nombre in enumerate(nombres_columnas):
         print(f"•{idx}: {nombre}")
 
-    # * Prueba de acceso de nombre_columnas por medio de indices
-    #print(nombres_columnas[3])
-
-    # * prueba de tipo de datos desplegados
-    #datos = df.iloc[:, 3]
-    #datos = datos.value_counts()
-    #datos = datos.values
-
-    #print(datos)
-    #print(numpy.array(datos.tolist()))
-
 def explorationNumerosControlEncuestaTests(encuesta_csv_file, 
                                             tests_grupo_control_csv_file, 
                                             tests_grupo_experimental_csv_file):
@@ -217,16 +206,25 @@ def explorationBigMergedDataset(encuesta_csv_file):
     df_tests = pandas.concat([df_grupo_control, df_grupo_experimental], axis=0)
 
     # * union de todos los datos a comparar para facilidad de análisis
-    big_merged_dataset = pandas.merge(df_encuesta, df_tests, 
+    df_big_merged_dataset = pandas.merge(df_encuesta, df_tests, 
                                               how='outer', 
                                               right_on='# Control', 
                                               left_on='Número de control:',)
     
-    big_merged_dataset.to_csv(
+    # * eliminacion de campos repetidos o innecesarios
+    df_big_merged_dataset = df_big_merged_dataset.drop(columns=['Marca temporal', 'Número de control:'])
+
+    # * ordenación de campos para mayor legibilidad
+    df_big_merged_dataset.insert(0, 'ID Grupo', df_big_merged_dataset.pop('ID Grupo'))
+    df_big_merged_dataset.insert(0, '# Control', df_big_merged_dataset.pop('# Control'))
+
+    # * generacion de CSV del merge
+    df_big_merged_dataset.to_csv(
         BIG_MERGED_DATASET_CSV_FILE, index=False)
     print(f"CSV {BIG_MERGED_DATASET_CSV_FILE} realizado con éxito!")
 
 def main():
+    BIG_MERGED_DATASET_CSV_FILE = '../csv/Merge_EncuestaPreliminar_ValidPreTestPostTest.csv'
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
     TESTS_GRUPO_EXPERIMENTAL_CSV_FILE = "../csv/PreTestPostTest_grupoExperimental.csv"
@@ -236,6 +234,7 @@ def main():
     #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
     #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
     explorationBigMergedDataset(ENCUESTA_PRELIMINAR_CSV_FILE)
+    explorationNombreColumnas(BIG_MERGED_DATASET_CSV_FILE)
 
 if __name__ == "__main__":
     main()
