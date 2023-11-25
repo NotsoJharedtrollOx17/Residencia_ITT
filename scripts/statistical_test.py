@@ -194,12 +194,10 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
     test_control, test_experimental = "", ""
 
     # * calculo de estadisticos descriptivos breves para estas dos columnas
-        # TODO guardar estidisticos como CSV para explicar los datos
     descriptivos_control = df_grupo_control[['Pre-Test', 'Post-Test']].describe()
     descriptivos_experimental = df_grupo_experimental[['Pre-Test', 'Post-Test']].describe()
 
     # * evaluación de normalidad en los datos para determinar el tipo de prueba estadística a aplicar en cada grupo
-        # TODO modificar script para guardar los datos solicitados como JSON, incluyendo las hipotesis aceptadas, los p valores, y las pruebas estadisticas utilizadas
         # * debe ser un solo archivo para evitar complicaciones.
     test_control, test_experimental = getExistenciaNormalidadDatos(df_grupo_control, df_grupo_experimental)
 
@@ -234,7 +232,6 @@ def getPruebasEstadisticas(tests_grupo_control_csv_file,
     print("FIN PRUEBAS ESTADISTICAS SOBRE EL PRE-TEST Y POST-TEST")    
 
 def main():
-    ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoControl.csv'
     TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
 

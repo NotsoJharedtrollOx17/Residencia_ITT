@@ -168,6 +168,64 @@ def explorationNumerosControlEncuestaTests(encuesta_csv_file,
         TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE, index=False)
     print(f"CSV {TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE} realizado con éxito!")
     
+def explorationBigMergedDataset(encuesta_csv_file):
+    BIG_MERGED_DATASET_CSV_FILE = '../csv/Merge_EncuestaPreliminar_ValidPreTestPostTest.csv'
+    TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoControl.csv'
+    TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
+
+    df_encuesta = pandas.read_csv(encuesta_csv_file, encoding='utf-8')
+    df_grupo_control = pandas.read_csv(TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, encoding='utf-8')
+    df_grupo_experimental = pandas.read_csv(TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE, encoding='utf-8')
+    
+    n_rows_control, n_columns_control = df_grupo_control.shape
+    n_rows_experimental, n_columns_experimental = df_grupo_experimental.shape
+
+    # * reescritura de los datos a tipo string ; evita problemas en el merge por errores de conversion de datos e Google Sheets a Google Docs
+    df_encuesta['Número de control:'] = df_encuesta['Número de control:'].astype(str)
+    df_grupo_control['# Control'] = df_grupo_control['# Control'].astype(str)
+    df_grupo_experimental['# Control'] = df_grupo_experimental['# Control'].astype(str)
+    
+    # * agregación de columnas para asignar ID de grupo de control o el ID de grupo experimental
+        # * Grupo de control: gc_nn
+        # * Grupo Experimental: ge_nn
+    list_id_grupo_control = []
+    list_id_grupo_experimental = []
+    id_grupo = ""
+
+    for idx in range (1, n_rows_control+1):
+        if idx <= 9:
+            id_grupo = f"gc0{idx}"
+        else:
+            id_grupo = f"gc{idx}"
+
+        list_id_grupo_control.append(id_grupo)
+
+    for idx in range (1, n_rows_experimental+1):
+        id_grupo = ""
+
+        if idx <= 9:
+            id_grupo = f"ge0{idx}"
+        else:
+            id_grupo = f"ge{idx}"
+
+        list_id_grupo_experimental.append(id_grupo)
+
+    df_grupo_control.insert(0, "ID Grupo", list_id_grupo_control)
+    df_grupo_experimental.insert(0, "ID Grupo", list_id_grupo_experimental)
+
+    # * concatenacion de los datos recabados en la realización del pre-test y post-test
+    df_tests = pandas.concat([df_grupo_control, df_grupo_experimental], axis=0)
+
+    # * union de todos los datos a comparar para facilidad de análisis
+    big_merged_dataset = pandas.merge(df_encuesta, df_tests, 
+                                              how='outer', 
+                                              right_on='# Control', 
+                                              left_on='Número de control:',)
+    
+    big_merged_dataset.to_csv(
+        BIG_MERGED_DATASET_CSV_FILE, index=False)
+    print(f"CSV {BIG_MERGED_DATASET_CSV_FILE} realizado con éxito!")
+
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
@@ -176,7 +234,8 @@ def main():
     #explorationNombreColumnas(ENCUESTA_PRELIMINAR_CSV_FILE)
     #explorationIncidenciasInteres(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
     #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
-    explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
+    #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
+    explorationBigMergedDataset(ENCUESTA_PRELIMINAR_CSV_FILE)
 
 if __name__ == "__main__":
     main()
