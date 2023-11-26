@@ -43,9 +43,11 @@ def getPalabrasRepresentativasRespuestas(idx ,df_respuestas, df_numeros_control,
         descripcion_temas.append(palabras_tema) 
         
         # * consulta de numeros de control por respuestas dentro de las tematicas
+        # * IMPORTANTE: el orden almacenado es del de mayor afinidad a la tematica, a menor afinidad
         tema = output[:, tema_idx].argsort()[::-1]
         print(f'Tema {tema_idx+1}: ')
         print(palabras_tema)
+        print(tema)
         for iter_idx, respuesta_idx in enumerate(tema):
             numero_control_respuesta = df_numeros_control[respuesta_idx]
             
@@ -62,7 +64,7 @@ def getPalabrasRepresentativasRespuestas(idx ,df_respuestas, df_numeros_control,
         'id_tema': id_temas,
         'palabrasclave_tema': descripcion_temas,
         'descripcion_tema': '',
-        'numero_control_respuestas' : numeros_control_por_tema,
+        'numeros_control_respuestas' : numeros_control_por_tema,
     }
     
     json_summary = {
@@ -155,7 +157,7 @@ def main():
     print("\nFIN SUMMARY de temas recurrentes en preguntas abiertas de la Encuesta Preliminar")
     getTemasDeRespuesta(df_csv, SUMMARY_FILE, count, lda)
     print("INICIO DESCRIPCION COHERENTE de temas recurrentes con LLM")
-    getDescripcionesCoherentesTemasRespuesta(SUMMARY_FILE)
+    #getDescripcionesCoherentesTemasRespuesta(SUMMARY_FILE)
     print("FIN DESCRIPCION COHERENTE de temas recurrentes con LLM")
 
 if __name__ == '__main__':
