@@ -2,8 +2,10 @@ import pandas
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+import paxplot
 import optionsEncuestaPreliminar as EncuestaPreliminar
 import matplotlib.cm as cm 
+import matplotlib.colors
 from matplotlib.patches import Patch
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
@@ -145,7 +147,6 @@ def getFilteredSpanishWords(texto):
     palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
     return ' '.join(palabras_filtradas)
 
-# * considerar extraer esos datos del metodo como una clase Singleton para no batallar
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
 def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
 
@@ -299,15 +300,79 @@ def getIncidenciasEncuestaPreliminar(df_csv):
 
     print("FIN Incidencias detectas en la Encuesta Preliminar")
 
+def getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_csv):
+    df_csv = df_csv.drop(columns= ["# Control"])
+    df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
+    df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
+    columns = df_csv.columns
+    len_columns = len(columns)
+
+    # * filtros importantes
+        # * para obtener los valores que pertenecen al Grupo de Control
+    filtro_grupo_control = df_csv["ID Grupo"].str.contains("gc")
+        # * ... Grupo Experimental
+    filtro_grupo_experimental = df_csv["ID Grupo"].str.contains("ge")
+
+    # * aplicacion de los filtros
+    df_grupo_control = df_csv[filtro_grupo_control]
+    df_grupo_experimental = df_csv[filtro_grupo_experimental]
+
+    ids_grupo = df_grupo_control['ID Grupo'].values
+    ids_grupo = np.concatenate((df_grupo_experimental['ID Grupo'].values, ids_grupo), axis=None)
+
+    # * graficacion del parallel coordinate plot
+        # * colores para los grupos
+    labels = ['ID Grupo', 
+              'p08_1', 'p08_2', 
+              'p09_1', 'p09_2', 
+              'p10_1', 'p10_2', 
+              'p11_1', 'p11_2', 
+              'p12_1', 'p12_2']
+
+    colormap = matplotlib.colors.ListedColormap(['green', 'orange'])
+    config_grupo_control = {'alpha': 0.5, 'color': 'green', 'zorder': 0, 'label': 'GC'}
+    config_grupo_experimental = {'alpha': 0.5, 'color': 'orange', 'zorder': 0, 'label': 'GE'}
+
+    print(ids_grupo.tolist())
+
+    # * creación del grafico
+    paxfig = paxplot.pax_parallel(n_axes=len_columns)
+    
+    # TODO fix the display ; ID Grupo bar looks extremely squashed
+    # * configuración de las etiquetas
+        # * color naranja en el parallel plot para el grupo de control
+    paxfig.plot(df_grupo_control.to_numpy(), line_kwargs = config_grupo_control)
+    
+        # * color azul en el parallel plot para el grupo de control
+    paxfig.plot(df_grupo_experimental.to_numpy(), line_kwargs = config_grupo_experimental)
+    paxfig.set_labels(labels)
+    paxfig.set_ticks(ax_idx=0, ticks=list(range(0, 13)), labels=ids_grupo.tolist())
+    paxfig.set_even_ticks(
+        ax_idx=0,
+        n_ticks=13,
+    )
+    for idx in list(range(1, len_columns)):
+        #paxfig.set_ticks(ax_idx=idx, ticks=list(range(0, 13)), labels=ids_grupo.tolist())
+        paxfig.set_lim(ax_idx=idx, bottom=1.0, top=39)
+    #paxfig.add_legend()
+    #paxfig.add_legend(labels=['GC', 'GE'])
+
+    plt.show()
+
+
 def main():
-    CSV_FILE = "../csv/EncuestaPreliminar.csv"
-    df_csv = pandas.read_csv(CSV_FILE, encoding='utf-8')
-    df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_csv)
+    ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
+    RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE = '../csv/Ranking_Tematicas_PreguntasAbiertas_EncuestaPreliminar_ValidPreTestPostTest.csv'
+
+    df_ranking_csv = pandas.read_csv(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE, encoding='utf-8')
+    df_encuesta_csv = pandas.read_csv(ENCUESTA_PRELIMINAR_CSV_FILE, encoding='utf-8')
+    #df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_encuesta_csv)
 
     #getHistogramaDatosDemograficos(df_normalizado)
-    getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
+    #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
-    #getIncidenciasEncuestaPreliminar(df_normalizado) # * SI SIRVE EL NORMALIZADO
+    #getIncidenciasEncuestaPreliminar(df_normalizado)
+    getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_ranking_csv)
 
 if __name__ == "__main__":
     main()
