@@ -157,12 +157,12 @@ def explorationNumerosControlEncuestaTests(encuesta_csv_file,
         TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE, index=False)
     print(f"CSV {TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE} realizado con éxito!")
     
-def explorationBigMergedDataset(encuesta_csv_file):
+def explorationBigMergedDataset(csv_file):
     BIG_MERGED_DATASET_CSV_FILE = '../csv/Merge_EncuestaPreliminar_ValidPreTestPostTest.csv'
     TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoControl.csv'
     TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE = '../csv/VALID_PreTestPostTest_grupoExperimental.csv'
 
-    df_encuesta = pandas.read_csv(encuesta_csv_file, encoding='utf-8')
+    df_encuesta = pandas.read_csv(csv_file, encoding='utf-8')
     df_grupo_control = pandas.read_csv(TESTS_GRUPO_CONTROL_VALIDADOS_CSV_FILE, encoding='utf-8')
     df_grupo_experimental = pandas.read_csv(TESTS_GRUPO_EXPERIMENTAL_VALIDADOS_CSV_FILE, encoding='utf-8')
     
@@ -224,8 +224,35 @@ def explorationBigMergedDataset(encuesta_csv_file):
         BIG_MERGED_DATASET_CSV_FILE, index=False)
     print(f"CSV {BIG_MERGED_DATASET_CSV_FILE} realizado con éxito!")
 
+def explorationRankingTematicasPreguntasAbiertas(csv_file, aprobados_posttest = True):
+    df_csv = pandas.read_csv(csv_file, encoding='utf-8')
+
+    if aprobados_posttest:
+        df_csv = df_csv[df_csv['Aprobado_Post-Test']=='aprobado']
+
+    df_csv = df_csv.drop(columns= ["# Control"])
+    df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
+
+    # * filtros importantes
+        # * para obtener los valores que pertenecen al Grupo de Control
+    filtro_grupo_control = df_csv["ID Grupo"].str.contains("gc")
+        # * ... Grupo Experimental
+    filtro_grupo_experimental = df_csv["ID Grupo"].str.contains("ge")
+
+    # * aplicacion de los filtros
+    df_grupo_control = df_csv[filtro_grupo_control]
+    df_grupo_experimental = df_csv[filtro_grupo_experimental]
+
+    print("INICIO EXPLORACION RANKING DE RESPUESTAS DE LAS PREGUNTAS ABIERTAS DE LA ENCUESTA PRELIMINAR")
+    print("\nGrupo Control: ")
+    print(df_grupo_control)
+    print("\nGrupo Experimental: ")
+    print(df_grupo_experimental)
+    print("\nFIN EXPLORACION RANKING DE RESPUESTAS DE LAS PREGUNTAS ABIERTAS DE LA ENCUESTA PRELIMINAR")
+
 def main():
     BIG_MERGED_DATASET_CSV_FILE = '../csv/Merge_EncuestaPreliminar_ValidPreTestPostTest.csv'
+    RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE = '../csv/Ranking_Tematicas_PreguntasAbiertas_EncuestaPreliminar_ValidPreTestPostTest.csv'
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     TESTS_GRUPO_CONTROL_CSV_FILE = "../csv/PreTestPostTest_grupoControl.csv"
     TESTS_GRUPO_EXPERIMENTAL_CSV_FILE = "../csv/PreTestPostTest_grupoExperimental.csv"
@@ -235,7 +262,9 @@ def main():
     #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
     #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
     #explorationBigMergedDataset(ENCUESTA_PRELIMINAR_CSV_FILE)
-    explorationNombreColumnas(BIG_MERGED_DATASET_CSV_FILE)
+    #explorationNombreColumnas(BIG_MERGED_DATASET_CSV_FILE)
+    explorationNombreColumnas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
+    explorationRankingTematicasPreguntasAbiertas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
 
 if __name__ == "__main__":
     main()

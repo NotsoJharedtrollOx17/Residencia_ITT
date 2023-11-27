@@ -300,14 +300,14 @@ def getIncidenciasEncuestaPreliminar(df_csv):
 
     print("FIN Incidencias detectas en la Encuesta Preliminar")
 
-def getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_csv):
+def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     df_csv = df_csv.drop(columns= ["# Control"])
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
     columns = df_csv.columns
     len_columns = len(columns)
 
-    # * filtros importantes
+'''    # * filtros importantes
         # * para obtener los valores que pertenecen al Grupo de Control
     filtro_grupo_control = df_csv["ID Grupo"].str.contains("gc")
         # * ... Grupo Experimental
@@ -338,7 +338,6 @@ def getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_csv):
     # * creación del grafico
     paxfig = paxplot.pax_parallel(n_axes=len_columns)
     
-    # TODO fix the display ; ID Grupo bar looks extremely squashed
     # * configuración de las etiquetas
         # * color naranja en el parallel plot para el grupo de control
     paxfig.plot(df_grupo_control.to_numpy(), line_kwargs = config_grupo_control)
@@ -357,7 +356,7 @@ def getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_csv):
     #paxfig.add_legend()
     #paxfig.add_legend(labels=['GC', 'GE'])
 
-    plt.show()
+    plt.show()'''
 
 
 def main():
