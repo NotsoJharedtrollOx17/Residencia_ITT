@@ -2,10 +2,9 @@ import pandas
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import paxplot
 import optionsEncuestaPreliminar as EncuestaPreliminar
 import matplotlib.cm as cm 
-import matplotlib.colors
+from matplotlib import ticker
 from matplotlib.patches import Patch
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
@@ -272,6 +271,30 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
+def NumberLineRanking(df_csv):
+
+     # Crear datos de ejemplo
+    valores = np.arange(1, 40)
+    etiquetas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN']
+    
+    # Crear la figura y los ejes
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    ax.yaxis.set_major_locator(ticker.NullLocator())
+    ax.spines[['left', 'right', 'top']].set_visible(False)
+
+    # Dibujar la línea numérica
+    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', shrinkA=0, shrinkB=0)
+    ax.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=arrow_format, annotation_clip=False)
+    ax.set_xlim(0, 40)
+    ax.set_ylim(-1, 1)
+
+    # Dibujar los valores y etiquetas
+    for valor, etiqueta in zip(valores, etiquetas):
+        color = plt.cm.jet(valor / 40)  # Colores distintos
+        ax.text(valor, 0, etiqueta, color=color, ha='center', va='center', fontsize=8)
+    plt.show()
+
 def getIncidenciasEncuestaPreliminar(df_csv):
 
     incidencias_interes = EncuestaPreliminar.getIndicesIncidenciasInteres()
@@ -304,8 +327,36 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     df_csv = df_csv.drop(columns= ["# Control"])
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
-    columns = df_csv.columns
-    len_columns = len(columns)
+
+    # Crear datos de ejemplo
+    valores = np.arange(1, 39)
+    etiquetas = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN']
+    
+    # Crear la figura y los ejes
+    fig, ax = plt.subplots()
+
+    ax.yaxis.set_major_locator(ticker.NullLocator())
+    ax.spines[['left', 'right', 'top']].set_visible(False)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1.00))
+
+    # Dibujar la línea numérica
+    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', shrinkA=0, shrinkB=0)
+    ax.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=arrow_format, annotation_clip=False)
+    ax.set_xlim(0, 39)
+    ax.set_ylim(0, 1)
+
+    # * REFERENCIA: 
+        # * https://stackoverflow.com/questions/23186804/graph-point-on-straight-line-number-line-in-python
+        # * https://stackoverflow.com/questions/33737736/matplotlib-axis-arrow-tip
+        # * https://matplotlib.org/stable/gallery/ticks/tick-formatters.html
+
+    # Dibujar los valores y etiquetas
+    for valor, etiqueta in zip(valores, etiquetas):
+        color = plt.cm.jet(valor / 40)  # Colores distintos
+        ax.plot(valor, 0.05, 'o')
+        ax.text(valor, 0.1, etiqueta, color=color, ha='center', va='center', fontsize=8)
+    plt.show()
+
 
 '''    # * filtros importantes
         # * para obtener los valores que pertenecen al Grupo de Control
@@ -371,7 +422,7 @@ def main():
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
     #getIncidenciasEncuestaPreliminar(df_normalizado)
-    getParallelCoordinatesRankingTematicasRespuestasPreguntasAbiertas(df_ranking_csv)
+    getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
 
 if __name__ == "__main__":
     main()
