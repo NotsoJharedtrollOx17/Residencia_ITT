@@ -271,9 +271,16 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
+# TODO AGREGAR FUNCIONALIDAD PARA DESPLEGAR LOS DATOS correctamente desde el CSV
 def NumberLineRanking(df_csv):
+    df_csv = df_csv.drop(columns= ["# Control"])
+    df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
+    df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
 
-     # Crear datos de ejemplo
+    print(df_csv)
+
+
+    # Crear datos de ejemplo
     valores = np.arange(1, 40)
     etiquetas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN']
     
@@ -328,22 +335,29 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
 
-    # Crear datos de ejemplo
-    valores = np.arange(1, 39)
-    etiquetas = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN']
+    # * Nombres de las columnas
+    nombres_columnas = df_csv.columns.tolist()
+    
+    # * TEST datos:
+    valores = df_csv[nombres_columnas[1]].tolist()
+    etiquetas = df_csv["ID Grupo"].tolist()
     
     # Crear la figura y los ejes
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots(figsize=(10, 4))
 
-    ax.yaxis.set_major_locator(ticker.NullLocator())
-    ax.spines[['left', 'right', 'top']].set_visible(False)
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1.00))
+    axes.yaxis.set_major_locator(ticker.NullLocator())
+    axes.spines[['left', 'right', 'top']].set_visible(False)
+    axes.xaxis.set_major_locator(ticker.MultipleLocator(1.00))
 
     # Dibujar la línea numérica
-    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', shrinkA=0, shrinkB=0)
-    ax.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=arrow_format, annotation_clip=False)
-    ax.set_xlim(0, 39)
-    ax.set_ylim(0, 1)
+    # * linea extendida de margenes
+    margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
+    axes.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
+    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
+    axes.annotate('', xy=(35, 0.27), xytext=(5, 0.27), arrowprops=arrow_format, annotation_clip=False)
+    axes.set_xlim(1, 39)
+    axes.set_ylim(0, 1)
+    axes.set_title(f"test lorem ipsum dolor", y=0.35, fontsize=12)
 
     # * REFERENCIA: 
         # * https://stackoverflow.com/questions/23186804/graph-point-on-straight-line-number-line-in-python
@@ -351,10 +365,14 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
         # * https://matplotlib.org/stable/gallery/ticks/tick-formatters.html
 
     # Dibujar los valores y etiquetas
+    axes.text(0 - 0.25, 0, 'p08_1', rotation='vertical', horizontalalignment='right', fontsize=10)
+    axes.text(0, 0.25, 'Mayor afinidad', horizontalalignment='left', fontsize=8)
+    axes.text(40, 0.25, 'Menor afinidad', horizontalalignment='right', fontsize=8)
+    
     for valor, etiqueta in zip(valores, etiquetas):
-        color = plt.cm.jet(valor / 40)  # Colores distintos
-        ax.plot(valor, 0.05, 'o')
-        ax.text(valor, 0.1, etiqueta, color=color, ha='center', va='center', fontsize=8)
+        color = plt.cm.jet(valor / 40)  # Colores distintos\
+        axes.plot(valor, 0.05, 'o', color=color)
+        axes.text(valor, 0.15, etiqueta, rotation='vertical', color=color, ha='center', va='center', fontsize=8)
     plt.show()
 
 
