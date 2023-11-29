@@ -6,6 +6,7 @@ import optionsEncuestaPreliminar as EncuestaPreliminar
 import matplotlib.cm as cm 
 from matplotlib import ticker
 from matplotlib.patches import Patch
+from matplotlib.colors import LinearSegmentedColormap
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 
@@ -271,35 +272,94 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
-# TODO AGREGAR FUNCIONALIDAD PARA DESPLEGAR LOS DATOS correctamente desde el CSV
-def NumberLineRanking(df_csv):
-    df_csv = df_csv.drop(columns= ["# Control"])
-    df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
-    df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
+# TODO probarasignacion de colores
+def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas):
 
-    print(df_csv)
+    def create_custom_colormap(start_color_hex, num_levels):
+        start_color_rgb = tuple(int(start_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+        
+        # Define a lighter shade of green for the end color
+        end_color_rgb = tuple(min(1, c + 0.2) for c in start_color_rgb)  # Adjust the factor (0.2) for the desired lightness
 
+        colors = [start_color_rgb]
+        for i in range(1, num_levels - 1):
+            ratio = i / (num_levels - 1)
+            color = [start + ratio * (end - start) for start, end in zip(start_color_rgb, end_color_rgb)]
+            colors.append(color)
 
-    # Crear datos de ejemplo
-    valores = np.arange(1, 40)
-    etiquetas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN']
+        colors.append(end_color_rgb)
+
+        return LinearSegmentedColormap.from_list('custom_colormap', colors, N=num_levels)
+
+    def assign_colors(df):
+        # Count occurrences of 'gc' and 'ge' in the 'ID Grupo' column
+        gc_count = df['ID Grupo'].str.count('gc').sum()
+        ge_count = df['ID Grupo'].str.count('ge').sum()
+
+        # Create gradients for 'gc' and 'ge' based on the counts
+        gc_gradient = create_custom_colormap("#99FF33", gc_count)
+        ge_gradient = create_custom_colormap("#FFA500", ge_count)
+
+        # Assign colors based on the gradients
+        def get_color(x):
+            if 'gc' in x:
+                return gc_gradient(df['ID Grupo'].str.contains('gc').loc[x])
+            elif 'ge' in x:
+                return ge_gradient(df['ID Grupo'].str.contains('ge').loc[x])
+            else:
+                return None
+
+        df['Color'] = df['ID Grupo'].apply(get_color)
+
+        return df
+
+    fig, axes = plt.subplots(cantidad_tematicas, figsize=(10, 4))
     
     # Crear la figura y los ejes
-    fig, ax = plt.subplots(figsize=(10, 8))
+    for idx, tematica in enumerate(nombre_tematicas):
+        valores = df_csv.iloc[:, idx].tolist()
 
-    ax.yaxis.set_major_locator(ticker.NullLocator())
-    ax.spines[['left', 'right', 'top']].set_visible(False)
+        if idx == 0:
+            axes[idx].yaxis.set_major_locator(ticker.NullLocator())
+            axes[idx].spines[['left', 'right', 'top']].set_visible(False)
+            axes[idx].xaxis.set_major_locator(ticker.MultipleLocator(1.00))
 
-    # Dibujar la línea numérica
-    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', shrinkA=0, shrinkB=0)
-    ax.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=arrow_format, annotation_clip=False)
-    ax.set_xlim(0, 40)
-    ax.set_ylim(-1, 1)
+            # Dibujar la línea numérica
+            # * linea extendida de margenes
+            margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
+            axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
+            # * flecha alusiva de la direccion del ranking (izquierda mas afin ; derecha menos afin)
+            arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
+            axes[idx].annotate('', xy=(35, 0.27), xytext=(5, 0.27), arrowprops=arrow_format, annotation_clip=False)
+            axes[idx].set_xlim(1, 39)
+            axes[idx].set_ylim(0, 1)
+            axes[idx].set_title(f"Ranking de afinidad en tematicas detectadas en las preguntas abiertas", y=0.35, fontsize=12)
+            # Dibujar los valores y etiquetas
+            axes[idx].text(0 - 0.25, 0, tematica, rotation='vertical', horizontalalignment='right', fontsize=10)
+            axes[idx].text(0, 0.25, 'Mayor afinidad', horizontalalignment='left', fontsize=8)
+            axes[idx].text(40, 0.25, 'Menor afinidad', horizontalalignment='right', fontsize=8)
 
-    # Dibujar los valores y etiquetas
-    for valor, etiqueta in zip(valores, etiquetas):
-        color = plt.cm.jet(valor / 40)  # Colores distintos
-        ax.text(valor, 0, etiqueta, color=color, ha='center', va='center', fontsize=8)
+        # * REFERENCIA: 
+            # * https://stackoverflow.com/questions/23186804/graph-point-on-straight-line-number-line-in-python
+            # * https://stackoverflow.com/questions/33737736/matplotlib-axis-arrow-tip
+            # * https://matplotlib.org/stable/gallery/ticks/tick-formatters.html
+
+        else:
+            # * linea extendida de margenes
+            margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
+            axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
+            axes[idx].set_xlim(1, 39)
+            axes[idx].set_ylim(0, 1)
+            axes[idx].text(0 - 0.25, 0, tematica, rotation='vertical', horizontalalignment='right', fontsize=10)
+        
+        # TODO aplicar mapa de color personalizado para evitar solapar colores e identificar facilmente los valores
+        # * OJO: gc -> verde flourescente (99FF33) ; ge -> naranja flourescente (FF9933)
+        for valor, etiqueta in zip(valores, etiquetas):
+            color = plt.cm.jet(valor / 40)  # Colores distintos\
+            axes[idx].plot(valor, 0.05, 'o', color=color)
+            axes[idx].text(valor, 0.15, etiqueta, rotation='vertical', color=color, ha='center', va='center', fontsize=8)
+
+    
     plt.show()
 
 def getIncidenciasEncuestaPreliminar(df_csv):
@@ -334,100 +394,23 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     df_csv = df_csv.drop(columns= ["# Control"])
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
+    # Sort the DataFrame by the 'ID Grupo' column in ascending order
+    df_csv = df_csv.sort_values(by='ID Grupo')
 
+    # * ids enmascarados de los sujetos aprobados
+    etiquetas = df_csv["ID Grupo"].tolist()
+    print(etiquetas)
+
+    df_csv = df_csv.drop(columns= ["ID Grupo"])+
     # * Nombres de las columnas
     nombres_columnas = df_csv.columns.tolist()
     
-    # * TEST datos:
-    valores = df_csv[nombres_columnas[1]].tolist()
-    etiquetas = df_csv["ID Grupo"].tolist()
+    # * nombre clave de la tematica (tomado de las columnas)
+    nombre_tematicas = [s.split("p", 1)[0] for s in nombres_columnas]
+    cantidad_tematicas = len(nombre_tematicas)
+
+    #numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas)
     
-    # Crear la figura y los ejes
-    fig, axes = plt.subplots(figsize=(10, 4))
-
-    axes.yaxis.set_major_locator(ticker.NullLocator())
-    axes.spines[['left', 'right', 'top']].set_visible(False)
-    axes.xaxis.set_major_locator(ticker.MultipleLocator(1.00))
-
-    # Dibujar la línea numérica
-    # * linea extendida de margenes
-    margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
-    axes.annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
-    arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
-    axes.annotate('', xy=(35, 0.27), xytext=(5, 0.27), arrowprops=arrow_format, annotation_clip=False)
-    axes.set_xlim(1, 39)
-    axes.set_ylim(0, 1)
-    axes.set_title(f"test lorem ipsum dolor", y=0.35, fontsize=12)
-
-    # * REFERENCIA: 
-        # * https://stackoverflow.com/questions/23186804/graph-point-on-straight-line-number-line-in-python
-        # * https://stackoverflow.com/questions/33737736/matplotlib-axis-arrow-tip
-        # * https://matplotlib.org/stable/gallery/ticks/tick-formatters.html
-
-    # Dibujar los valores y etiquetas
-    axes.text(0 - 0.25, 0, 'p08_1', rotation='vertical', horizontalalignment='right', fontsize=10)
-    axes.text(0, 0.25, 'Mayor afinidad', horizontalalignment='left', fontsize=8)
-    axes.text(40, 0.25, 'Menor afinidad', horizontalalignment='right', fontsize=8)
-    
-    for valor, etiqueta in zip(valores, etiquetas):
-        color = plt.cm.jet(valor / 40)  # Colores distintos\
-        axes.plot(valor, 0.05, 'o', color=color)
-        axes.text(valor, 0.15, etiqueta, rotation='vertical', color=color, ha='center', va='center', fontsize=8)
-    plt.show()
-
-
-'''    # * filtros importantes
-        # * para obtener los valores que pertenecen al Grupo de Control
-    filtro_grupo_control = df_csv["ID Grupo"].str.contains("gc")
-        # * ... Grupo Experimental
-    filtro_grupo_experimental = df_csv["ID Grupo"].str.contains("ge")
-
-    # * aplicacion de los filtros
-    df_grupo_control = df_csv[filtro_grupo_control]
-    df_grupo_experimental = df_csv[filtro_grupo_experimental]
-
-    ids_grupo = df_grupo_control['ID Grupo'].values
-    ids_grupo = np.concatenate((df_grupo_experimental['ID Grupo'].values, ids_grupo), axis=None)
-
-    # * graficacion del parallel coordinate plot
-        # * colores para los grupos
-    labels = ['ID Grupo', 
-              'p08_1', 'p08_2', 
-              'p09_1', 'p09_2', 
-              'p10_1', 'p10_2', 
-              'p11_1', 'p11_2', 
-              'p12_1', 'p12_2']
-
-    colormap = matplotlib.colors.ListedColormap(['green', 'orange'])
-    config_grupo_control = {'alpha': 0.5, 'color': 'green', 'zorder': 0, 'label': 'GC'}
-    config_grupo_experimental = {'alpha': 0.5, 'color': 'orange', 'zorder': 0, 'label': 'GE'}
-
-    print(ids_grupo.tolist())
-
-    # * creación del grafico
-    paxfig = paxplot.pax_parallel(n_axes=len_columns)
-    
-    # * configuración de las etiquetas
-        # * color naranja en el parallel plot para el grupo de control
-    paxfig.plot(df_grupo_control.to_numpy(), line_kwargs = config_grupo_control)
-    
-        # * color azul en el parallel plot para el grupo de control
-    paxfig.plot(df_grupo_experimental.to_numpy(), line_kwargs = config_grupo_experimental)
-    paxfig.set_labels(labels)
-    paxfig.set_ticks(ax_idx=0, ticks=list(range(0, 13)), labels=ids_grupo.tolist())
-    paxfig.set_even_ticks(
-        ax_idx=0,
-        n_ticks=13,
-    )
-    for idx in list(range(1, len_columns)):
-        #paxfig.set_ticks(ax_idx=idx, ticks=list(range(0, 13)), labels=ids_grupo.tolist())
-        paxfig.set_lim(ax_idx=idx, bottom=1.0, top=39)
-    #paxfig.add_legend()
-    #paxfig.add_legend(labels=['GC', 'GE'])
-
-    plt.show()'''
-
-
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE = '../csv/Ranking_Tematicas_PreguntasAbiertas_EncuestaPreliminar_ValidPreTestPostTest.csv'
