@@ -3,11 +3,12 @@ import pandas
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import optionsEncuestaPreliminar as EncuestaPreliminar
 import matplotlib.cm as cm 
+import optionsEncuestaPreliminar as EncuestaPreliminar
 from matplotlib import ticker
 from matplotlib.patches import Patch
 from matplotlib.colors import LinearSegmentedColormap
+from pandas.plotting import parallel_coordinates
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 
@@ -205,6 +206,8 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
 # TODO agregar nombre para el archivo y ruta para almacenamiento
 def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx):
 
+    NOMBRE_ARCHIVO = '../results/plots/ranking_Aprobados_respuestastematicaspreguntasabiertas.png'
+
     fig, axes = plt.subplots(cantidad_tematicas, figsize=(15, 8))
     plt.subplots_adjust(wspace=0.5, hspace=2)
     plt.suptitle(f"Ranking de afinidad en respuestas abiertas de los aprobados del Post-Test", fontsize=12)
@@ -245,7 +248,6 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
             axes[idx].set_ylim(0, 1)
             axes[idx].text(0 - 0.8, 0, tematica, rotation='vertical', ha='left', va='center', fontsize=8)
         
-        # TODO aplicar mapa de color personalizado para evitar solapar colores e identificar facilmente los valores
         # * OJO: gc -> verde flourescente (99FF33) ; ge -> naranja flourescente (FF9933)
         idx_grupo = 0
         for valor, etiqueta in zip(valores, etiquetas):
@@ -253,7 +255,9 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
             axes[idx].text(valor, 1, etiqueta, rotation=24, ha='center', va='center', fontsize=7)
             idx_grupo+=1
 
-    plt.show()
+    plt.savefig(NOMBRE_ARCHIVO)
+    plt.close()
+    print(f"GRAFICA {NOMBRE_ARCHIVO} realizada con éxito!")
 
 def getWordCloudOpinionesQuimica(df_csv):
     # * dichas preguntas son las de las columnas 8 -> 11
@@ -416,6 +420,26 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     cantidad_tematicas = len(nombre_tematicas)
 
     numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx)
+
+# TODO modificar para generar Parallel Coordinates plot
+def getParallelCoordinatesRespuestasAprobados(df_csv):
+    # Define your color-coding column
+    color_column = 'ID Grupo'
+
+    # Define the columns for the parallel coordinates plot
+    parallel_columns = ['Column1', 'Column2', 'Column3']  # Add your actual column names here
+
+    # Basic parallel coordinates plot with 'dimensions' parameter
+    plt.figure(figsize=(10, 6))  # Adjust figure size as needed
+    parallel_coordinates(df_csv, color_column, dimensions=parallel_columns, color=['blue', 'green', 'red'])
+
+    # Additional formatting
+    plt.title('Your Title Here', fontsize=16)  # Adjust title font size as needed
+    plt.xlabel('X-axis Label', fontsize=12)  # Adjust X-axis label font size as needed
+    plt.ylabel('Y-axis Label', fontsize=12)  # Adjust Y-axis label font size as needed
+
+    # Display the plot
+    plt.show()
     
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
