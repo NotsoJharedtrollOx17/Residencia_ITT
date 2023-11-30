@@ -1,3 +1,4 @@
+import re
 import pandas
 import seaborn as sns
 import numpy as np
@@ -74,78 +75,6 @@ def histograma(df, columna_csv, opciones):
     plt.savefig(f"../results/plots/{nombre_archivo}")
     plt.close()
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
-
-def getWordCloudOpinionesQuimica(df_csv):
-    # * dichas preguntas son las de las columnas 8 -> 11
-    print("INICIO WordCloud de opiniones respecto a la materia de Química")
-    for idx in range(8, 13):
-        wordCloud(df_csv, idx)
-    print("FIN WordCloud de opiniones respecto a la materia de Química")
-    print()
-
-def getHistogramaDatosDemograficos(df_csv):
-    # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
-    opciones_pregunta3 = EncuestaPreliminar.getOpcionesPregunta3()
-    opciones_pregunta4 = EncuestaPreliminar.getOpcionesPregunta4()
-    opciones_pregunta5_6 = EncuestaPreliminar.getOpcionesPregunta5_6()
-    opciones_pregunta7 = EncuestaPreliminar.getOpcionesPregunta7()
-    opciones_pregunta27 = EncuestaPreliminar.getOpcionesPregunta27()
-
-    # * dichas preguntas son las de las columnas 3 -> 7 Y 27
-    print("INICIO Histogramas de los Datos Demograficos")
-    histograma(df_csv, 3, opciones_pregunta3)
-    histograma(df_csv, 4, opciones_pregunta4)
-    histograma(df_csv, 5, opciones_pregunta5_6)
-    histograma(df_csv, 6, opciones_pregunta5_6)
-    histograma(df_csv, 7, opciones_pregunta7)
-    histograma(df_csv, 27, opciones_pregunta27)
-    print("FIN Histogramas de los Datos Demograficos")
-    print()
-
-def getHistogramaDiagnosticoAprendizajeQuimica(df_csv):
-    # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
-    opciones_pregunta13_1622_24 = EncuestaPreliminar.getOpcionesPregunta13_1622_24()
-    opciones_pregunta15_23 = EncuestaPreliminar.getOpcionesPregunta15_23()
-    opciones_pregunta14 = EncuestaPreliminar.getOpcionesPregunta14()
-    opciones_pregunta25 = EncuestaPreliminar.getOpcionesPregunta25()
-    opciones_pregunta26 = EncuestaPreliminar.getOpcionesPregunta26()
-
-    # * dichas preguntas son las de las columnas 13 -> 26
-    print("INICIO Histogramas del diagnóstico respecto al aprendizaje de Química")
-    histograma(df_csv, 13, opciones_pregunta13_1622_24)
-    histograma(df_csv, 14, opciones_pregunta14)
-    histograma(df_csv, 15, opciones_pregunta15_23)
-    for idx in range(16, 23):
-        histograma(df_csv, idx, opciones_pregunta13_1622_24)
-    histograma(df_csv, 23, opciones_pregunta15_23)
-    histograma(df_csv, 24, opciones_pregunta13_1622_24)
-    histograma(df_csv, 25, opciones_pregunta25)
-    histograma(df_csv, 26, opciones_pregunta26)
-    print("FIN Histogramas del diagnóstico respecto al aprendizaje de Química")
-    print()
-
-def getDataFrameRespuestasCategoricasNormalizadas(df_csv):
-    # normalizando preguntas con respuestas categoricas a minúsculas
-        # * dichas preguntas son las de las columnas 13 -> 26
-    df_normalizado = df_csv.copy()
-    nombres_columnas = df_normalizado.columns.tolist()
-    nombres_columnas = nombres_columnas[13-1:26]
-
-    for columna in nombres_columnas:
-        df_normalizado[columna] = df_csv[columna].apply(lambda x: x.lower())
-            
-    return df_normalizado
-
-def getSpanishStopWords():
-    stop_words = list(stopwords.words('spanish'))
-    return stop_words
-
-def getFilteredSpanishWords(texto):
-    stop_words = getSpanishStopWords()
-    texto.lower()
-    palabras = texto.split()
-    palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
-    return ' '.join(palabras_filtradas)
 
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
 def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
@@ -272,72 +201,39 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
-# TODO probarasignacion de colores
-def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas):
 
-    def create_custom_colormap(start_color_hex, num_levels):
-        start_color_rgb = tuple(int(start_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
-        
-        # Define a lighter shade of green for the end color
-        end_color_rgb = tuple(min(1, c + 0.2) for c in start_color_rgb)  # Adjust the factor (0.2) for the desired lightness
+# TODO agregar nombre para el archivo y ruta para almacenamiento
+def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx):
 
-        colors = [start_color_rgb]
-        for i in range(1, num_levels - 1):
-            ratio = i / (num_levels - 1)
-            color = [start + ratio * (end - start) for start, end in zip(start_color_rgb, end_color_rgb)]
-            colors.append(color)
-
-        colors.append(end_color_rgb)
-
-        return LinearSegmentedColormap.from_list('custom_colormap', colors, N=num_levels)
-
-    def assign_colors(df):
-        # Count occurrences of 'gc' and 'ge' in the 'ID Grupo' column
-        gc_count = df['ID Grupo'].str.count('gc').sum()
-        ge_count = df['ID Grupo'].str.count('ge').sum()
-
-        # Create gradients for 'gc' and 'ge' based on the counts
-        gc_gradient = create_custom_colormap("#99FF33", gc_count)
-        ge_gradient = create_custom_colormap("#FFA500", ge_count)
-
-        # Assign colors based on the gradients
-        def get_color(x):
-            if 'gc' in x:
-                return gc_gradient(df['ID Grupo'].str.contains('gc').loc[x])
-            elif 'ge' in x:
-                return ge_gradient(df['ID Grupo'].str.contains('ge').loc[x])
-            else:
-                return None
-
-        df['Color'] = df['ID Grupo'].apply(get_color)
-
-        return df
-
-    fig, axes = plt.subplots(cantidad_tematicas, figsize=(10, 4))
+    fig, axes = plt.subplots(cantidad_tematicas, figsize=(15, 8))
+    plt.subplots_adjust(wspace=0.5, hspace=2)
+    plt.suptitle(f"Ranking de afinidad en respuestas abiertas de los aprobados del Post-Test", fontsize=12)
     
     # Crear la figura y los ejes
     for idx, tematica in enumerate(nombre_tematicas):
         valores = df_csv.iloc[:, idx].tolist()
 
+        #margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
+        #axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
+        axes[idx].spines[['left', 'right', 'top']].set_visible(False)
+        axes[idx].yaxis.set_major_locator(ticker.NullLocator())
+        axes[idx].xaxis.set_major_locator(ticker.MultipleLocator(4.00))
+        axes[idx].xaxis.set_minor_locator(ticker.MultipleLocator(1.00))
+        axes[idx].xaxis.set_tick_params(labelsize=8)
+        
         if idx == 0:
-            axes[idx].yaxis.set_major_locator(ticker.NullLocator())
-            axes[idx].spines[['left', 'right', 'top']].set_visible(False)
-            axes[idx].xaxis.set_major_locator(ticker.MultipleLocator(1.00))
 
             # Dibujar la línea numérica
             # * linea extendida de margenes
-            margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
-            axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
             # * flecha alusiva de la direccion del ranking (izquierda mas afin ; derecha menos afin)
             arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
-            axes[idx].annotate('', xy=(35, 0.27), xytext=(5, 0.27), arrowprops=arrow_format, annotation_clip=False)
-            axes[idx].set_xlim(1, 39)
-            axes[idx].set_ylim(0, 1)
-            axes[idx].set_title(f"Ranking de afinidad en tematicas detectadas en las preguntas abiertas", y=0.35, fontsize=12)
+            axes[idx].annotate('', xy=(35, 2.125), xytext=(5, 2.125), arrowprops=arrow_format, annotation_clip=False)
             # Dibujar los valores y etiquetas
-            axes[idx].text(0 - 0.25, 0, tematica, rotation='vertical', horizontalalignment='right', fontsize=10)
-            axes[idx].text(0, 0.25, 'Mayor afinidad', horizontalalignment='left', fontsize=8)
-            axes[idx].text(40, 0.25, 'Menor afinidad', horizontalalignment='right', fontsize=8)
+            axes[idx].text(0, 2, 'Mayor afinidad', horizontalalignment='left', fontsize=10)
+            axes[idx].text(40, 2, 'Menor afinidad', horizontalalignment='right', fontsize=10)
+            axes[idx].set_ylim(0, 1)
+            axes[idx].set_xlim(0, 40)
+            axes[idx].text(0 - 0.8, 0, tematica, rotation='vertical', ha='left', va='center', fontsize=8)
 
         # * REFERENCIA: 
             # * https://stackoverflow.com/questions/23186804/graph-point-on-straight-line-number-line-in-python
@@ -345,22 +241,91 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas):
             # * https://matplotlib.org/stable/gallery/ticks/tick-formatters.html
 
         else:
-            # * linea extendida de margenes
-            margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
-            axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
-            axes[idx].set_xlim(1, 39)
+            axes[idx].set_xlim(0, 40)
             axes[idx].set_ylim(0, 1)
-            axes[idx].text(0 - 0.25, 0, tematica, rotation='vertical', horizontalalignment='right', fontsize=10)
+            axes[idx].text(0 - 0.8, 0, tematica, rotation='vertical', ha='left', va='center', fontsize=8)
         
         # TODO aplicar mapa de color personalizado para evitar solapar colores e identificar facilmente los valores
         # * OJO: gc -> verde flourescente (99FF33) ; ge -> naranja flourescente (FF9933)
+        idx_grupo = 0
         for valor, etiqueta in zip(valores, etiquetas):
-            color = plt.cm.jet(valor / 40)  # Colores distintos\
-            axes[idx].plot(valor, 0.05, 'o', color=color)
-            axes[idx].text(valor, 0.15, etiqueta, rotation='vertical', color=color, ha='center', va='center', fontsize=8)
+            axes[idx].plot(valor, 0.4, 'o', color=colores_por_idx[idx_grupo])
+            axes[idx].text(valor, 1, etiqueta, rotation=24, ha='center', va='center', fontsize=7)
+            idx_grupo+=1
 
-    
     plt.show()
+
+def getWordCloudOpinionesQuimica(df_csv):
+    # * dichas preguntas son las de las columnas 8 -> 11
+    print("INICIO WordCloud de opiniones respecto a la materia de Química")
+    for idx in range(8, 13):
+        wordCloud(df_csv, idx)
+    print("FIN WordCloud de opiniones respecto a la materia de Química")
+    print()
+
+def getHistogramaDatosDemograficos(df_csv):
+    # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
+    opciones_pregunta3 = EncuestaPreliminar.getOpcionesPregunta3()
+    opciones_pregunta4 = EncuestaPreliminar.getOpcionesPregunta4()
+    opciones_pregunta5_6 = EncuestaPreliminar.getOpcionesPregunta5_6()
+    opciones_pregunta7 = EncuestaPreliminar.getOpcionesPregunta7()
+    opciones_pregunta27 = EncuestaPreliminar.getOpcionesPregunta27()
+
+    # * dichas preguntas son las de las columnas 3 -> 7 Y 27
+    print("INICIO Histogramas de los Datos Demograficos")
+    histograma(df_csv, 3, opciones_pregunta3)
+    histograma(df_csv, 4, opciones_pregunta4)
+    histograma(df_csv, 5, opciones_pregunta5_6)
+    histograma(df_csv, 6, opciones_pregunta5_6)
+    histograma(df_csv, 7, opciones_pregunta7)
+    histograma(df_csv, 27, opciones_pregunta27)
+    print("FIN Histogramas de los Datos Demograficos")
+    print()
+
+def getHistogramaDiagnosticoAprendizajeQuimica(df_csv):
+    # * el orden de preguntas es en relación con el orden provisto en el Google Sheets
+    opciones_pregunta13_1622_24 = EncuestaPreliminar.getOpcionesPregunta13_1622_24()
+    opciones_pregunta15_23 = EncuestaPreliminar.getOpcionesPregunta15_23()
+    opciones_pregunta14 = EncuestaPreliminar.getOpcionesPregunta14()
+    opciones_pregunta25 = EncuestaPreliminar.getOpcionesPregunta25()
+    opciones_pregunta26 = EncuestaPreliminar.getOpcionesPregunta26()
+
+    # * dichas preguntas son las de las columnas 13 -> 26
+    print("INICIO Histogramas del diagnóstico respecto al aprendizaje de Química")
+    histograma(df_csv, 13, opciones_pregunta13_1622_24)
+    histograma(df_csv, 14, opciones_pregunta14)
+    histograma(df_csv, 15, opciones_pregunta15_23)
+    for idx in range(16, 23):
+        histograma(df_csv, idx, opciones_pregunta13_1622_24)
+    histograma(df_csv, 23, opciones_pregunta15_23)
+    histograma(df_csv, 24, opciones_pregunta13_1622_24)
+    histograma(df_csv, 25, opciones_pregunta25)
+    histograma(df_csv, 26, opciones_pregunta26)
+    print("FIN Histogramas del diagnóstico respecto al aprendizaje de Química")
+    print()
+
+def getDataFrameRespuestasCategoricasNormalizadas(df_csv):
+    # normalizando preguntas con respuestas categoricas a minúsculas
+        # * dichas preguntas son las de las columnas 13 -> 26
+    df_normalizado = df_csv.copy()
+    nombres_columnas = df_normalizado.columns.tolist()
+    nombres_columnas = nombres_columnas[13-1:26]
+
+    for columna in nombres_columnas:
+        df_normalizado[columna] = df_csv[columna].apply(lambda x: x.lower())
+            
+    return df_normalizado
+
+def getSpanishStopWords():
+    stop_words = list(stopwords.words('spanish'))
+    return stop_words
+
+def getFilteredSpanishWords(texto):
+    stop_words = getSpanishStopWords()
+    texto.lower()
+    palabras = texto.split()
+    palabras_filtradas = [palabra for palabra in palabras if palabra not in stop_words]
+    return ' '.join(palabras_filtradas)
 
 def getIncidenciasEncuestaPreliminar(df_csv):
 
@@ -391,25 +356,66 @@ def getIncidenciasEncuestaPreliminar(df_csv):
     print("FIN Incidencias detectas en la Encuesta Preliminar")
 
 def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
+    def create_custom_colormap(start_color_hex, end_color_hex, num_levels):
+        start_color_rgb = tuple(int(start_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+        
+        # Define a more distinct end color
+        end_color_rgb = tuple(int(end_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+        colors = [start_color_rgb]
+        for i in range(1, num_levels - 1):
+            ratio = i / (num_levels - 1)
+            color = [start + ratio * (end - start) for start, end in zip(start_color_rgb, end_color_rgb)]
+            colors.append(color)
+
+        colors.append(end_color_rgb)
+
+        return LinearSegmentedColormap.from_list('custom_colormap', colors, N=num_levels)
+
+    def assign_colors(id_grupo_list):
+        colores_por_idx = []
+        
+        # * Count occurrences of 'gc' and 'ge' in the 'ID Grupo' column
+        gc_count = sum('gc' in x for x in id_grupo_list)
+        ge_count = sum('ge' in x for x in id_grupo_list)
+
+        # * Gradientes para colores
+        gc_gradient = create_custom_colormap("08FF08", "024002", gc_count) # * green-ish
+        ge_gradient = create_custom_colormap("0AA3CF", "001440", ge_count) # * blue-ish
+
+        for idx, id_grupo in enumerate(id_grupo_list):
+            if 'gc' in id_grupo:
+                color_asignado = gc_gradient(idx)
+                colores_por_idx.append(color_asignado)
+            if 'ge' in id_grupo:
+                color_asignado = ge_gradient(idx)
+                colores_por_idx.append(color_asignado)
+
+        return colores_por_idx
+    
     df_csv = df_csv.drop(columns= ["# Control"])
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.drop(columns= ["Aprobado_Post-Test"])
+    
     # Sort the DataFrame by the 'ID Grupo' column in ascending order
     df_csv = df_csv.sort_values(by='ID Grupo')
 
     # * ids enmascarados de los sujetos aprobados
     etiquetas = df_csv["ID Grupo"].tolist()
-    print(etiquetas)
 
-    df_csv = df_csv.drop(columns= ["ID Grupo"])+
+    # * listado de colores por ID Grupo
+    colores_por_idx = assign_colors(etiquetas)
+    
+    df_csv = df_csv.drop(columns= ["ID Grupo"])
+    
     # * Nombres de las columnas
     nombres_columnas = df_csv.columns.tolist()
     
     # * nombre clave de la tematica (tomado de las columnas)
-    nombre_tematicas = [s.split("p", 1)[0] for s in nombres_columnas]
+    nombre_tematicas = [re.search(r'p\d+_\d+', s).group(0) for s in nombres_columnas if re.search(r'p\d+_\d+', s)]
     cantidad_tematicas = len(nombre_tematicas)
 
-    #numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas)
+    numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx)
     
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
