@@ -202,8 +202,6 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
     plt.close()    
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
-
-# TODO agregar nombre para el archivo y ruta para almacenamiento
 def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx):
 
     NOMBRE_ARCHIVO = '../results/plots/ranking_Aprobados_respuestastematicaspreguntasabiertas.png'
@@ -230,12 +228,13 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
             # * linea extendida de margenes
             # * flecha alusiva de la direccion del ranking (izquierda mas afin ; derecha menos afin)
             arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
+            axes[idx].set_xlim(0, 40)
+            axes[idx].set_ylim(0, 1)
             axes[idx].annotate('', xy=(35, 2.125), xytext=(5, 2.125), arrowprops=arrow_format, annotation_clip=False)
+            
             # Dibujar los valores y etiquetas
             axes[idx].text(0, 2, 'Mayor afinidad', horizontalalignment='left', fontsize=10)
             axes[idx].text(40, 2, 'Menor afinidad', horizontalalignment='right', fontsize=10)
-            axes[idx].set_ylim(0, 1)
-            axes[idx].set_xlim(0, 40)
             axes[idx].text(0 - 0.8, 0, tematica, rotation='vertical', ha='left', va='center', fontsize=8)
 
         # * REFERENCIA: 
@@ -377,23 +376,29 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
         return LinearSegmentedColormap.from_list('custom_colormap', colors, N=num_levels)
 
     def assign_colors(id_grupo_list):
-        colores_por_idx = []
-        
+
+        # * contadores para mantener el control del conteo
+        gc_idx = 0
+        ge_idx = 0
+        colores_por_idx = []        
+
         # * Count occurrences of 'gc' and 'ge' in the 'ID Grupo' column
         gc_count = sum('gc' in x for x in id_grupo_list)
         ge_count = sum('ge' in x for x in id_grupo_list)
 
         # * Gradientes para colores
         gc_gradient = create_custom_colormap("08FF08", "024002", gc_count) # * green-ish
-        ge_gradient = create_custom_colormap("0AA3CF", "001440", ge_count) # * blue-ish
+        ge_gradient = create_custom_colormap("FF5100", "61360E", ge_count) # * orange-ish
 
-        for idx, id_grupo in enumerate(id_grupo_list):
+        for id_grupo in id_grupo_list:
             if 'gc' in id_grupo:
-                color_asignado = gc_gradient(idx)
+                color_asignado = gc_gradient(gc_idx)
                 colores_por_idx.append(color_asignado)
-            if 'ge' in id_grupo:
-                color_asignado = ge_gradient(idx)
+                gc_idx += 1
+            elif 'ge' in id_grupo:
+                color_asignado = ge_gradient(ge_idx)
                 colores_por_idx.append(color_asignado)
+                ge_idx += 1
 
         return colores_por_idx
     
