@@ -206,10 +206,11 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
 
     NOMBRE_ARCHIVO = '../results/plots/ranking_Aprobados_respuestastematicaspreguntasabiertas.png'
 
-    fig, axes = plt.subplots(cantidad_tematicas, figsize=(15, 8))
+    fig, axes = plt.subplots(cantidad_tematicas, figsize=(15, 12))
     plt.subplots_adjust(wspace=0.5, hspace=2)
+    plt.xlabel("Escala de afinidad", fontsize=11)
     plt.suptitle(f"Ranking de afinidad en respuestas abiertas de los aprobados del Post-Test", fontsize=12)
-    
+
     # Crear la figura y los ejes
     for idx, tematica in enumerate(nombre_tematicas):
         valores = df_csv.iloc[:, idx].tolist()
@@ -217,10 +218,11 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
         #margen_format = dict(facecolor='black', edgecolor='black', arrowstyle='-', shrinkA=0, shrinkB=0)
         #axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
         axes[idx].spines[['left', 'right', 'top']].set_visible(False)
+        axes[idx].xaxis.set_tick_params(labelsize=8)
+        axes[idx].set_facecolor('white')
         axes[idx].yaxis.set_major_locator(ticker.NullLocator())
         axes[idx].xaxis.set_major_locator(ticker.MultipleLocator(4.00))
         axes[idx].xaxis.set_minor_locator(ticker.MultipleLocator(1.00))
-        axes[idx].xaxis.set_tick_params(labelsize=8)
         
         if idx == 0:
 
@@ -233,8 +235,8 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
             axes[idx].annotate('', xy=(35, 2.125), xytext=(5, 2.125), arrowprops=arrow_format, annotation_clip=False)
             
             # Dibujar los valores y etiquetas
-            axes[idx].text(0, 2, 'Mayor afinidad', horizontalalignment='left', fontsize=10)
-            axes[idx].text(40, 2, 'Menor afinidad', horizontalalignment='right', fontsize=10)
+            axes[idx].text(0, 2, 'Mayor afinidad', style='italic', horizontalalignment='left', fontsize=10)
+            axes[idx].text(40, 2, 'Menor afinidad', style='italic', horizontalalignment='right', fontsize=6)
             axes[idx].text(0 - 0.8, 0, tematica, rotation='vertical', ha='left', va='center', fontsize=8)
 
         # * REFERENCIA: 
@@ -449,6 +451,7 @@ def getParallelCoordinatesRespuestasAprobados(df_csv):
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE = '../csv/Ranking_Tematicas_PreguntasAbiertas_EncuestaPreliminar_ValidPreTestPostTest.csv'
+    DATOS_APROBADOS_PRETEST_POSTTEST_ENCUESTA_PRELIMINAR = ''
 
     df_ranking_csv = pandas.read_csv(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE, encoding='utf-8')
     df_encuesta_csv = pandas.read_csv(ENCUESTA_PRELIMINAR_CSV_FILE, encoding='utf-8')
@@ -458,7 +461,8 @@ def main():
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     #getWordCloudOpinionesQuimica(df_normalizado)
     #getIncidenciasEncuestaPreliminar(df_normalizado)
-    getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
+    #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
+    getParallelCoordinatesRespuestasAprobados(df_ranking_csv)
 
 if __name__ == "__main__":
     main()
