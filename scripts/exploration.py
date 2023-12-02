@@ -262,9 +262,9 @@ def main():
     #explorationGrupoControlGrupoExperimental(ENCUESTA_PRELIMINAR_CSV_FILECSV_FILE)
     #explorationNumerosControlEncuestaTests(ENCUESTA_PRELIMINAR_CSV_FILE, TESTS_GRUPO_CONTROL_CSV_FILE, TESTS_GRUPO_EXPERIMENTAL_CSV_FILE)
     #explorationBigMergedDataset(ENCUESTA_PRELIMINAR_CSV_FILE)
-    #explorationNombreColumnas(BIG_MERGED_DATASET_CSV_FILE)
-    explorationNombreColumnas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
-    explorationRankingTematicasPreguntasAbiertas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
+    explorationNombreColumnas(BIG_MERGED_DATASET_CSV_FILE)
+    #explorationNombreColumnas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
+    #explorationRankingTematicasPreguntasAbiertas(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_CSV_FILE)
 
 if __name__ == "__main__":
     main()

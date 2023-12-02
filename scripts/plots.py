@@ -4,13 +4,14 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm 
+import matplotlib.colors
 import optionsEncuestaPreliminar as EncuestaPreliminar
 from matplotlib import ticker
 from matplotlib.patches import Patch
 from matplotlib.colors import LinearSegmentedColormap
-from pandas.plotting import parallel_coordinates
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
+from scipy.interpolate import make_interp_spline
 
 # * permite hacer las graficas con fondo transparente
 plt.rcParams.update({"figure.facecolor": (1, 1, 1, 0)})
@@ -260,6 +261,119 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
     plt.close()
     print(f"GRAFICA {NOMBRE_ARCHIVO} realizada con éxito!")
 
+# * REFERENCIA: https://github.com/jraine/parallel-coordinates-plot-dataframe/blob/master/parallel_plot.py
+def parallelCoordinatesRespuestas(df_csv, cols, rank_attr, cmap='Spectral', spread=None, curved=False, curvedextend=0.1):
+    def assign_colors(id_grupo_list):
+        gc_colors = plt.cm.get_cmap("Greens")
+        ge_colors = plt.cm.get_cmap("Oranges")
+
+        gc_count = sum('gc' in x for x in id_grupo_list)
+        ge_count = sum('ge' in x for x in id_grupo_list)
+
+        gc_gradient = [gc_colors(i) for i in np.linspace(0, 1, gc_count)]
+        ge_gradient = [ge_colors(i) for i in np.linspace(0, 1, ge_count)]
+
+        colores_por_idx = []
+        gc_idx = 0
+        ge_idx = 0
+
+        for id_grupo in id_grupo_list:
+            if 'gc' in id_grupo:
+                colores_por_idx.append(gc_gradient[gc_idx])
+                gc_idx += 1
+            elif 'ge' in id_grupo:
+                colores_por_idx.append(ge_gradient[ge_idx])
+                ge_idx += 1
+
+        return colores_por_idx
+
+    '''Produce a parallel coordinates plot from pandas dataframe with line colour with respect to a column.
+    Required Arguments:
+        df: dataframe
+        cols: columns to use for axes
+        rank_attr: attribute to use for ranking
+    Options:
+        cmap: Colour palette to use for ranking of lines
+        spread: Spread to use to separate lines at categorical values
+        curved: Spline interpolation along lines
+        curvedextend: Fraction extension in y axis, adjust to contain curvature
+    Returns:
+        x coordinates for axes, y coordinates of all lines'''
+
+    colmap = plt.cm.get_cmap(cmap)
+    cols = cols + [rank_attr]
+
+    fig, axes = plt.subplots(1, len(cols)-1, sharey=False, figsize=(3*len(cols)+3,5))
+    valmat = np.ndarray(shape=(len(cols),len(df_csv)))
+    x = np.arange(0,len(cols),1)
+    ax_info = {}
+
+    # Integrate the color assignment logic here
+    colores_por_idx = assign_colors(df_csv['ID Grupo'].tolist())
+
+    for i,col in enumerate(cols):
+        vals = df_csv[col]
+
+        if (vals.dtype == float) & (len(np.unique(vals)) > 20):
+            minval = np.min(vals)
+            maxval = np.max(vals)
+            rangeval = maxval - minval
+            vals = np.true_divide(vals - minval, maxval-minval)
+            nticks = 5
+            tick_labels = [round(minval + i*(rangeval/nticks),4) for i in range(nticks+1)]
+            ticks = [0 + i*(1.0/nticks) for i in range(nticks+1)]
+            valmat[i] = vals
+            ax_info[col] = [tick_labels,ticks]
+        else:
+            vals = vals.astype('category')
+            cats = vals.cat.categories
+            c_vals = vals.cat.codes
+            minval = 0
+            maxval = len(cats)-1
+            if maxval == 0:
+                c_vals = 0.5
+            else:
+                c_vals = np.true_divide(c_vals - minval, maxval-minval)
+            tick_labels = cats
+            ticks = np.unique(c_vals)
+            ax_info[col] = [tick_labels,ticks]
+            if spread is not None:
+                offset = np.arange(-1,1,2./(len(c_vals)))*2e-2
+                np.random.shuffle(offset)
+                c_vals = c_vals + offset
+            valmat[i] = c_vals
+
+    extendfrac = curvedextend if curved else 0.05  
+    for i,ax in enumerate(axes):
+        for idx in range(valmat.shape[-1]):
+            if curved:
+                x_new = np.linspace(0, len(x), len(x)*20)
+                a_BSpline = make_interp_spline(x, valmat[:,idx],k=3,bc_type='clamped')
+                y_new = a_BSpline(x_new)
+                ax.plot(x_new,y_new,color=colores_por_idx[idx],alpha=0.3)
+            else:
+                ax.plot(x,valmat[:,idx],color=colores_por_idx[idx],alpha=0.3)
+        ax.set_ylim(0-extendfrac,1+extendfrac)
+        ax.set_xlim(i,i+1)
+
+    for dim, (ax,col) in enumerate(zip(axes,cols)):
+        ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
+        ax.yaxis.set_major_locator(ticker.FixedLocator(ax_info[col][1]))
+        ax.set_yticklabels(ax_info[col][0])
+        ax.set_xticklabels([cols[dim]])
+
+    plt.subplots_adjust(wspace=0)
+    norm = matplotlib.colors.Normalize(0,1)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    cbar = plt.colorbar(sm,pad=0,ticks=ax_info[rank_attr][1],extend='both',extendrect=True,extendfrac=extendfrac)
+    if curved:
+        cbar.ax.set_ylim(0-curvedextend,1+curvedextend)
+    cbar.ax.set_yticklabels(ax_info[rank_attr][0])
+    cbar.ax.set_xlabel(rank_attr)
+    plt.show()
+            
+    return x,valmat
+
 def getWordCloudOpinionesQuimica(df_csv):
     # * dichas preguntas son las de las columnas 8 -> 11
     print("INICIO WordCloud de opiniones respecto a la materia de Química")
@@ -428,31 +542,53 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
 
     numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx)
 
-# TODO modificar para generar Parallel Coordinates plot
+# TODO agregar versiones para datos demograficos, el diagnostico requerido y lso resultados del pre-test y post-test
 def getParallelCoordinatesRespuestasAprobados(df_csv):
+    # * obtención del nombre de las columnas del merge
+    nombres_columnas = df_csv.columns.tolist()
+
+    # * modificaciones del Dataframe para facilitar codificación
+    df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
+    df_csv = df_csv.sort_values(by='ID Grupo')
+    df_csv[nombres_columnas] = df_csv[nombres_columnas].astype(str)
+    df_csv = df_csv.drop(columns=nombres_columnas[0])
+    df_csv = df_csv.drop(columns=nombres_columnas[8:12+1])
+    df_csv = df_csv.drop(columns=nombres_columnas[30:31+1])
+
+    # * obtención del nombre de las columnas DESPUES de modificar
+    nombres_columnas = df_csv.columns.tolist()
+
+    # * renombramiento de cabezeras excesivamente largas
+        # * para los datos demograficos:
+    df_csv.columns.values[1:8+1] = ['Género', 'Edad', 'Nivel\nSocioeconómico', 
+                                    'Estudios\ndel padre', 'Estudios\nde la madre', 
+                                    'Trabaja\ny estudia', 'Frecuencia de\ndesayuno', 
+                                    'Horas de dormir\npromedio']
+        # * resto de preguntas
+    for idx in list(range(9,21)):
+        df_csv.columns.values[idx] = f'P {idx}'
+
+        # * calificaciones de pre-test y post-test
+    df_csv.columns.values[21:22+1] = ['Calificación\nPre-Test', 'Calificación\nPost-Test']
+
+    # * obtención del nombre de las columnas DESPUES de modificar
+    nombres_columnas = df_csv.columns.tolist()
+
+    print("Nombres de las columnas:")
+    for idx, nombre in enumerate(nombres_columnas):
+        print(f"•{idx}: {nombre}")
+
     # Define your color-coding column
     color_column = 'ID Grupo'
-
-    # Define the columns for the parallel coordinates plot
-    parallel_columns = ['Column1', 'Column2', 'Column3']  # Add your actual column names here
-
-    # Basic parallel coordinates plot with 'dimensions' parameter
-    plt.figure(figsize=(10, 6))  # Adjust figure size as needed
-    parallel_coordinates(df_csv, color_column, dimensions=parallel_columns, color=['blue', 'green', 'red'])
-
-    # Additional formatting
-    plt.title('Your Title Here', fontsize=16)  # Adjust title font size as needed
-    plt.xlabel('X-axis Label', fontsize=12)  # Adjust X-axis label font size as needed
-    plt.ylabel('Y-axis Label', fontsize=12)  # Adjust Y-axis label font size as needed
-
-    # Display the plot
-    plt.show()
     
+    parallelCoordinatesRespuestas(df_csv, nombres_columnas, color_column)
+
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
     RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE = '../csv/Ranking_Tematicas_PreguntasAbiertas_EncuestaPreliminar_ValidPreTestPostTest.csv'
-    DATOS_APROBADOS_PRETEST_POSTTEST_ENCUESTA_PRELIMINAR = ''
+    BIG_MERGED_DATASET_CSV_FILE = '../csv/Merge_EncuestaPreliminar_ValidPreTestPostTest.csv'
 
+    df_merge_csv = pandas.read_csv(BIG_MERGED_DATASET_CSV_FILE)
     df_ranking_csv = pandas.read_csv(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE, encoding='utf-8')
     df_encuesta_csv = pandas.read_csv(ENCUESTA_PRELIMINAR_CSV_FILE, encoding='utf-8')
     #df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_encuesta_csv)
@@ -462,7 +598,7 @@ def main():
     #getWordCloudOpinionesQuimica(df_normalizado)
     #getIncidenciasEncuestaPreliminar(df_normalizado)
     #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
-    getParallelCoordinatesRespuestasAprobados(df_ranking_csv)
+    getParallelCoordinatesRespuestasAprobados(df_merge_csv)
 
 if __name__ == "__main__":
     main()
