@@ -3,15 +3,13 @@ import pandas
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm 
-import matplotlib.colors
+import matplotlib.cm as cm
 import optionsEncuestaPreliminar as EncuestaPreliminar
 from matplotlib import ticker
 from matplotlib.patches import Patch
 from matplotlib.colors import LinearSegmentedColormap
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
-from scipy.interpolate import make_interp_spline
 
 # * permite hacer las graficas con fondo transparente
 plt.rcParams.update({"figure.facecolor": (1, 1, 1, 0)})
@@ -62,7 +60,7 @@ def histograma(df, columna_csv, opciones):
     axes.set_ylabel("Número de incidencias", fontsize=11)
     axes.set_title(f"{nombre_pregunta[columna_csv-1]}", fontsize=12)
     axes.set_ylim(0, 42) # * Limite de escala
-    axes.yaxis.set_major_locator(plt.MaxNLocator(integer=True)) # * Forzar la escala vertical a números enteros
+    axes.yaxis.set_major_locator(ticker.MaxNLocator(integer=True)) # * Forzar la escala vertical a números enteros
 
     # * Agregar números en las barras
     for bar, count in zip(bars, conteo):
@@ -76,6 +74,60 @@ def histograma(df, columna_csv, opciones):
 
     plt.savefig(f"../results/plots/{nombre_archivo}")
     plt.close()
+    print(f"GRAFICA {nombre_archivo} realizada con éxito!")
+
+# TODO crear ruta de almacenamiento de los scatterplots nominales
+def plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
+
+    df_csv = df_csv.drop(columns=['ID Grupo'])
+    nombre_columnas = df_csv.columns.tolist()
+
+    for idx, nombre_columnas in enumerate(nombre_columnas):
+        if idx == 0:
+            nombre_archivo = f"plotPoints_calificaciones_pretest_Aprobados_PostTest"
+        if idx == 1:
+            nombre_archivo = f"plotPoints_calificaciones_posttest_Aprobados_Posttest"
+        if idx == 2:
+            nombre_archivo = f"plotPoints_incrementos_pretestposttest_Aprobados_Posttest"
+
+        # Assuming df_csv is your DataFrame
+        df_csv[nombre_columnas] = df_csv[nombre_columnas].astype(int)
+
+        # * Parametros para graficos
+        fig, axes = plt.subplots(figsize=(6, 6))
+        axes.xaxis.set_tick_params(labelsize=8)
+        axes.yaxis.set_tick_params(labelsize=8)
+        axes.set_xlabel("ID Grupo", fontsize=10)
+
+        if idx == 0:
+            axes.set_title(f"Calificaciones del Pre-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
+            axes.set_ylabel("Calificación", fontsize=10)
+        if idx == 1:
+            axes.set_title(f"Calificaciones del Post-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
+            axes.set_ylabel("Calificación", fontsize=10)
+        if idx == 2:
+            axes.set_title(f"Incremento del Pre-Test al Post-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
+            axes.set_ylabel("Incremento", fontsize=10)    
+
+        # * Set the y-axis limits
+        axes.set_ylim([0-5, 100+5])
+        axes.set_facecolor('white')
+        axes.yaxis.set_major_locator(ticker.MultipleLocator(10.00))
+        axes.yaxis.set_minor_locator(ticker.MultipleLocator(5.00))
+        axes.grid(True, linestyle='--', alpha=0.7, zorder=1)
+        axes.margins(y=0.5)
+
+        # Scatter plot with categorical variables on the x-axis
+        axes.scatter(etiquetas, df_csv[nombre_columnas], color=colores_por_idx, label='Post-Test', zorder=2)
+
+        # Set x-axis ticks and labels
+        axes.set_xticks(etiquetas)
+        axes.set_xticklabels(etiquetas)
+
+        plt.show()
+    
+    # plt.savefig(f"../results/plots/{nombre_archivo}")
+    # plt.close()
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
@@ -231,9 +283,9 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
             # * linea extendida de margenes
             # * flecha alusiva de la direccion del ranking (izquierda mas afin ; derecha menos afin)
             arrow_format = dict(facecolor='black', edgecolor='black', arrowstyle='->', linestyle='dashed', shrinkA=0, shrinkB=0)
+            axes[idx].annotate('', xy=(35, 2.125), xytext=(5, 2.125), arrowprops=arrow_format, annotation_clip=False)
             axes[idx].set_xlim(0, 40)
             axes[idx].set_ylim(0, 1)
-            axes[idx].annotate('', xy=(35, 2.125), xytext=(5, 2.125), arrowprops=arrow_format, annotation_clip=False)
             
             # Dibujar los valores y etiquetas
             axes[idx].text(0, 2, 'Mayor afinidad', style='italic', horizontalalignment='left', fontsize=10)
@@ -260,119 +312,6 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
     plt.savefig(NOMBRE_ARCHIVO)
     plt.close()
     print(f"GRAFICA {NOMBRE_ARCHIVO} realizada con éxito!")
-
-# * REFERENCIA: https://github.com/jraine/parallel-coordinates-plot-dataframe/blob/master/parallel_plot.py
-def parallelCoordinatesRespuestas(df_csv, cols, rank_attr, cmap='Spectral', spread=None, curved=False, curvedextend=0.1):
-    def assign_colors(id_grupo_list):
-        gc_colors = plt.cm.get_cmap("Greens")
-        ge_colors = plt.cm.get_cmap("Oranges")
-
-        gc_count = sum('gc' in x for x in id_grupo_list)
-        ge_count = sum('ge' in x for x in id_grupo_list)
-
-        gc_gradient = [gc_colors(i) for i in np.linspace(0, 1, gc_count)]
-        ge_gradient = [ge_colors(i) for i in np.linspace(0, 1, ge_count)]
-
-        colores_por_idx = []
-        gc_idx = 0
-        ge_idx = 0
-
-        for id_grupo in id_grupo_list:
-            if 'gc' in id_grupo:
-                colores_por_idx.append(gc_gradient[gc_idx])
-                gc_idx += 1
-            elif 'ge' in id_grupo:
-                colores_por_idx.append(ge_gradient[ge_idx])
-                ge_idx += 1
-
-        return colores_por_idx
-
-    '''Produce a parallel coordinates plot from pandas dataframe with line colour with respect to a column.
-    Required Arguments:
-        df: dataframe
-        cols: columns to use for axes
-        rank_attr: attribute to use for ranking
-    Options:
-        cmap: Colour palette to use for ranking of lines
-        spread: Spread to use to separate lines at categorical values
-        curved: Spline interpolation along lines
-        curvedextend: Fraction extension in y axis, adjust to contain curvature
-    Returns:
-        x coordinates for axes, y coordinates of all lines'''
-
-    colmap = plt.cm.get_cmap(cmap)
-    cols = cols + [rank_attr]
-
-    fig, axes = plt.subplots(1, len(cols)-1, sharey=False, figsize=(3*len(cols)+3,5))
-    valmat = np.ndarray(shape=(len(cols),len(df_csv)))
-    x = np.arange(0,len(cols),1)
-    ax_info = {}
-
-    # Integrate the color assignment logic here
-    colores_por_idx = assign_colors(df_csv['ID Grupo'].tolist())
-
-    for i,col in enumerate(cols):
-        vals = df_csv[col]
-
-        if (vals.dtype == float) & (len(np.unique(vals)) > 20):
-            minval = np.min(vals)
-            maxval = np.max(vals)
-            rangeval = maxval - minval
-            vals = np.true_divide(vals - minval, maxval-minval)
-            nticks = 5
-            tick_labels = [round(minval + i*(rangeval/nticks),4) for i in range(nticks+1)]
-            ticks = [0 + i*(1.0/nticks) for i in range(nticks+1)]
-            valmat[i] = vals
-            ax_info[col] = [tick_labels,ticks]
-        else:
-            vals = vals.astype('category')
-            cats = vals.cat.categories
-            c_vals = vals.cat.codes
-            minval = 0
-            maxval = len(cats)-1
-            if maxval == 0:
-                c_vals = 0.5
-            else:
-                c_vals = np.true_divide(c_vals - minval, maxval-minval)
-            tick_labels = cats
-            ticks = np.unique(c_vals)
-            ax_info[col] = [tick_labels,ticks]
-            if spread is not None:
-                offset = np.arange(-1,1,2./(len(c_vals)))*2e-2
-                np.random.shuffle(offset)
-                c_vals = c_vals + offset
-            valmat[i] = c_vals
-
-    extendfrac = curvedextend if curved else 0.05  
-    for i,ax in enumerate(axes):
-        for idx in range(valmat.shape[-1]):
-            if curved:
-                x_new = np.linspace(0, len(x), len(x)*20)
-                a_BSpline = make_interp_spline(x, valmat[:,idx],k=3,bc_type='clamped')
-                y_new = a_BSpline(x_new)
-                ax.plot(x_new,y_new,color=colores_por_idx[idx],alpha=0.3)
-            else:
-                ax.plot(x,valmat[:,idx],color=colores_por_idx[idx],alpha=0.3)
-        ax.set_ylim(0-extendfrac,1+extendfrac)
-        ax.set_xlim(i,i+1)
-
-    for dim, (ax,col) in enumerate(zip(axes,cols)):
-        ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
-        ax.yaxis.set_major_locator(ticker.FixedLocator(ax_info[col][1]))
-        ax.set_yticklabels(ax_info[col][0])
-        ax.set_xticklabels([cols[dim]])
-
-    plt.subplots_adjust(wspace=0)
-    norm = matplotlib.colors.Normalize(0,1)
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    cbar = plt.colorbar(sm,pad=0,ticks=ax_info[rank_attr][1],extend='both',extendrect=True,extendfrac=extendfrac)
-    if curved:
-        cbar.ax.set_ylim(0-curvedextend,1+curvedextend)
-    cbar.ax.set_yticklabels(ax_info[rank_attr][0])
-    cbar.ax.set_xlabel(rank_attr)
-    plt.show()
-            
-    return x,valmat
 
 def getWordCloudOpinionesQuimica(df_csv):
     # * dichas preguntas son las de las columnas 8 -> 11
@@ -543,11 +482,71 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
     numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx)
 
 # TODO agregar versiones para datos demograficos, el diagnostico requerido y lso resultados del pre-test y post-test
-def getParallelCoordinatesRespuestasAprobados(df_csv):
+def getPlotPointsCalificacionesAprobados(df_csv):
+    def create_custom_colormap(start_color_hex, end_color_hex, num_levels):
+            start_color_rgb = tuple(int(start_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+            
+            # Define a more distinct end color
+            end_color_rgb = tuple(int(end_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+
+            colors = [start_color_rgb]
+            for i in range(1, num_levels - 1):
+                ratio = i / (num_levels - 1)
+                color = [start + ratio * (end - start) for start, end in zip(start_color_rgb, end_color_rgb)]
+                colors.append(color)
+
+            colors.append(end_color_rgb)
+
+            return LinearSegmentedColormap.from_list('custom_colormap', colors, N=num_levels)
+
+    def assign_colors(id_grupo_list):
+
+        # * contadores para mantener el control del conteo
+        gc_idx = 0
+        ge_idx = 0
+        colores_por_idx = []        
+
+        # * Count occurrences of 'gc' and 'ge' in the 'ID Grupo' column
+        gc_count = sum('gc' in x for x in id_grupo_list)
+        ge_count = sum('ge' in x for x in id_grupo_list)
+
+        # * Gradientes para colores
+        gc_gradient = create_custom_colormap("08FF08", "024002", gc_count) # * green-ish
+        ge_gradient = create_custom_colormap("FF5100", "61360E", ge_count) # * orange-ish
+
+        for id_grupo in id_grupo_list:
+            if 'gc' in id_grupo:
+                color_asignado = gc_gradient(gc_idx)
+                colores_por_idx.append(color_asignado)
+                gc_idx += 1
+            elif 'ge' in id_grupo:
+                color_asignado = ge_gradient(ge_idx)
+                colores_por_idx.append(color_asignado)
+                ge_idx += 1
+
+        return colores_por_idx
+        
+    # * obtención del nombre de las columnas del merge
+    nombres_columnas = df_csv.columns.tolist()
+    
+    # * modificaciones del Dataframe para facilitar codificación
+    df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
+    df_csv = df_csv.sort_values(by='ID Grupo')
+    df_csv[nombres_columnas] = df_csv[nombres_columnas].astype(str)
+    df_csv = df_csv.drop(columns=nombres_columnas[0])
+    df_csv = df_csv.drop(columns=nombres_columnas[2:26+1])
+    df_csv = df_csv.drop(columns=nombres_columnas[30:31+1])
+
     # * obtención del nombre de las columnas del merge
     nombres_columnas = df_csv.columns.tolist()
 
-    # * modificaciones del Dataframe para facilitar codificación
+    # * ids enmascarados de los sujetos aprobados
+    etiquetas = df_csv["ID Grupo"].tolist()
+
+    # * listado de colores por ID Grupo
+    colores_por_idx = assign_colors(etiquetas)
+
+    '''    # * modificaciones del Dataframe para facilitar codificación
     df_csv = df_csv[df_csv["Aprobado_Post-Test"]=='aprobado']
     df_csv = df_csv.sort_values(by='ID Grupo')
     df_csv[nombres_columnas] = df_csv[nombres_columnas].astype(str)
@@ -572,16 +571,9 @@ def getParallelCoordinatesRespuestasAprobados(df_csv):
     df_csv.columns.values[21:22+1] = ['Calificación\nPre-Test', 'Calificación\nPost-Test']
 
     # * obtención del nombre de las columnas DESPUES de modificar
-    nombres_columnas = df_csv.columns.tolist()
+    nombres_columnas = df_csv.columns.tolist()'''
 
-    print("Nombres de las columnas:")
-    for idx, nombre in enumerate(nombres_columnas):
-        print(f"•{idx}: {nombre}")
-
-    # Define your color-coding column
-    color_column = 'ID Grupo'
-    
-    parallelCoordinatesRespuestas(df_csv, nombres_columnas, color_column)
+    plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx)
 
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
@@ -598,7 +590,7 @@ def main():
     #getWordCloudOpinionesQuimica(df_normalizado)
     #getIncidenciasEncuestaPreliminar(df_normalizado)
     #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
-    getParallelCoordinatesRespuestasAprobados(df_merge_csv)
+    getPlotPointsCalificacionesAprobados(df_merge_csv)
 
 if __name__ == "__main__":
     main()
