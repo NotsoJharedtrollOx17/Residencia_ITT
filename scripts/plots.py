@@ -76,19 +76,18 @@ def histograma(df, columna_csv, opciones):
     plt.close()
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
-# TODO crear ruta de almacenamiento de los scatterplots nominales
-def plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
+def scatterCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
 
     df_csv = df_csv.drop(columns=['ID Grupo'])
     nombre_columnas = df_csv.columns.tolist()
 
     for idx, nombre_columnas in enumerate(nombre_columnas):
         if idx == 0:
-            nombre_archivo = f"plotPoints_calificaciones_pretest_Aprobados_PostTest"
+            nombre_archivo = f"scatter_calificaciones_pretest_Aprobados_PostTest"
         if idx == 1:
-            nombre_archivo = f"plotPoints_calificaciones_posttest_Aprobados_Posttest"
+            nombre_archivo = f"scatter_calificaciones_posttest_Aprobados_Posttest"
         if idx == 2:
-            nombre_archivo = f"plotPoints_incrementos_pretestposttest_Aprobados_Posttest"
+            nombre_archivo = f"scatter_incrementos_pretestposttest_Aprobados_Posttest"
 
         # Assuming df_csv is your DataFrame
         df_csv[nombre_columnas] = df_csv[nombre_columnas].astype(int)
@@ -106,7 +105,7 @@ def plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
             axes.set_title(f"Calificaciones del Post-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
             axes.set_ylabel("Calificación", fontsize=10)
         if idx == 2:
-            axes.set_title(f"Incremento del Pre-Test al Post-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
+            axes.set_title(f"Incremento de calificación del Pre-Test al Post-Test\n(SOLO Aprobados del Post-Test)", fontsize=12)
             axes.set_ylabel("Incremento", fontsize=10)    
 
         # * Set the y-axis limits
@@ -124,11 +123,10 @@ def plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
         axes.set_xticks(etiquetas)
         axes.set_xticklabels(etiquetas)
 
-        plt.show()
-    
-    # plt.savefig(f"../results/plots/{nombre_archivo}")
-    # plt.close()
-    print(f"GRAFICA {nombre_archivo} realizada con éxito!")
+        #plt.show()
+        plt.savefig(f"../results/plots/{nombre_archivo}")
+        plt.close()
+        print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
 # * REFERENCE: https://stackoverflow.com/questions/58303175/plotting-three-dimensions-of-categorical-data-in-python
 def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
@@ -481,8 +479,7 @@ def getNumberLineRankingTematicasPreguntasAbiertas(df_csv):
 
     numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, colores_por_idx)
 
-# TODO agregar versiones para datos demograficos, el diagnostico requerido y lso resultados del pre-test y post-test
-def getPlotPointsCalificacionesAprobados(df_csv):
+def getScatterCalificacionesAprobados(df_csv):
     def create_custom_colormap(start_color_hex, end_color_hex, num_levels):
             start_color_rgb = tuple(int(start_color_hex[i:i+2], 16) / 255.0 for i in (0, 2, 4))
             
@@ -573,7 +570,7 @@ def getPlotPointsCalificacionesAprobados(df_csv):
     # * obtención del nombre de las columnas DESPUES de modificar
     nombres_columnas = df_csv.columns.tolist()'''
 
-    plotPointsCalificacionesAprobados(df_csv, etiquetas, colores_por_idx)
+    scatterCalificacionesAprobados(df_csv, etiquetas, colores_por_idx)
 
 def main():
     ENCUESTA_PRELIMINAR_CSV_FILE = "../csv/EncuestaPreliminar.csv"
@@ -590,7 +587,7 @@ def main():
     #getWordCloudOpinionesQuimica(df_normalizado)
     #getIncidenciasEncuestaPreliminar(df_normalizado)
     #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
-    getPlotPointsCalificacionesAprobados(df_merge_csv)
+    getScatterCalificacionesAprobados(df_merge_csv)
 
 if __name__ == "__main__":
     main()
