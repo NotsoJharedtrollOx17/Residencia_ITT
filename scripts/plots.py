@@ -93,7 +93,7 @@ def scatterCalificacionesAprobados(df_csv, etiquetas, colores_por_idx):
         df_csv[nombre_columnas] = df_csv[nombre_columnas].astype(int)
 
         # * Parametros para graficos
-        fig, axes = plt.subplots(figsize=(6, 6))
+        fig, axes = plt.subplots(figsize=(6, 6), dpi=600)
         axes.xaxis.set_tick_params(labelsize=8)
         axes.yaxis.set_tick_params(labelsize=8)
         axes.set_xlabel("ID Grupo", fontsize=10)
@@ -257,7 +257,8 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
 
     NOMBRE_ARCHIVO = '../results/plots/ranking_Aprobados_respuestastematicaspreguntasabiertas.png'
 
-    fig, axes = plt.subplots(cantidad_tematicas, figsize=(15, 12))
+    # * REFERENCE TIP: https://pythonforthelab.com/blog/python-tip-ready-publish-matplotlib-figures/
+    fig, axes = plt.subplots(cantidad_tematicas, figsize=(16,7), dpi=600)
     plt.subplots_adjust(wspace=0.5, hspace=2)
     plt.xlabel("Escala de afinidad", fontsize=11)
     plt.suptitle(f"Ranking de afinidad en respuestas abiertas de los aprobados del Post-Test", fontsize=12)
@@ -270,7 +271,7 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
         #axes[idx].annotate('', xy=(40, 0), xytext=(0, 0), arrowprops=margen_format, annotation_clip=False)
         axes[idx].spines[['left', 'right', 'top']].set_visible(False)
         axes[idx].xaxis.set_tick_params(labelsize=8)
-        axes[idx].set_facecolor('white')
+        #axes[idx].set_facecolor('white')
         axes[idx].yaxis.set_major_locator(ticker.NullLocator())
         axes[idx].xaxis.set_major_locator(ticker.MultipleLocator(4.00))
         axes[idx].xaxis.set_minor_locator(ticker.MultipleLocator(1.00))
@@ -304,7 +305,7 @@ def numberLineRanking(df_csv, etiquetas, nombre_tematicas, cantidad_tematicas, c
         idx_grupo = 0
         for valor, etiqueta in zip(valores, etiquetas):
             axes[idx].plot(valor, 0.4, 'o', color=colores_por_idx[idx_grupo])
-            axes[idx].text(valor, 1, etiqueta, rotation=24, ha='center', va='center', fontsize=7)
+            axes[idx].text(valor, 1, etiqueta, ha='center', va='center', fontsize=8)
             idx_grupo+=1
 
     plt.savefig(NOMBRE_ARCHIVO)
