@@ -1,5 +1,4 @@
 import pandas
-import numpy
 import json
 import optionsEncuestaPreliminar as EncuestaPreliminar
 from time import time
