@@ -25,7 +25,7 @@ def wordCloud(df_csv, columna_csv):
     wordcloud = WordCloud(background_color='white', max_font_size=40).generate(palabras_filtradas)
 
     # * Parametros para graficos
-    fig, axes = plt.subplots(figsize=(10, 6))
+    fig, axes = plt.subplots(figsize=(10, 6), dpi=600)
     axes.axis('off') # sin ejes
     axes.imshow(wordcloud, interpolation='bilinear')
     axes.set_title(f"{nombre_pregunta[columna_csv-1]}", fontsize=12)
@@ -47,7 +47,7 @@ def histograma(df, columna_csv, opciones):
     conteo = datos_filtrados.value_counts().reindex(opciones, fill_value=0)
 
     # * Parametros para graficos
-    fig, axes = plt.subplots(figsize=(10, 6))
+    fig, axes = plt.subplots(figsize=(10, 6), dpi=600)
 
         # * para abreviar las etiquetas de la pregunta 5 y 6...
     if (columna_csv == 5 or columna_csv == 6):
@@ -155,7 +155,7 @@ def incidenciasTresPreguntas(df_csv, posiciones_preguntas):
                             nyplots,
                             sharey=True,
                             sharex=True,
-                            figsize=(14,16))
+                            figsize=(14,16), dpi=600)
     fig.suptitle(f'Incidencias Pregunta {posiciones_preguntas[0]} \u2229 Pregunta {posiciones_preguntas[1]} \u2229 Pregunta{posiciones_preguntas[2]}')
 
     # * colors for bar graph
@@ -581,14 +581,14 @@ def main():
     df_merge_csv = pandas.read_csv(BIG_MERGED_DATASET_CSV_FILE)
     df_ranking_csv = pandas.read_csv(RANKING_TEMATICAS_PREGUNTAS_ABIERTAS_ENCUESTA_CSV_FILE, encoding='utf-8')
     df_encuesta_csv = pandas.read_csv(ENCUESTA_PRELIMINAR_CSV_FILE, encoding='utf-8')
-    #df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_encuesta_csv)
+    df_normalizado = getDataFrameRespuestasCategoricasNormalizadas(df_encuesta_csv)
 
     #getHistogramaDatosDemograficos(df_normalizado)
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
-    #getWordCloudOpinionesQuimica(df_normalizado)
-    #getIncidenciasEncuestaPreliminar(df_normalizado)
+    getWordCloudOpinionesQuimica(df_normalizado)
+    getIncidenciasEncuestaPreliminar(df_normalizado)
     #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
-    getScatterCalificacionesAprobados(df_merge_csv)
+    #getScatterCalificacionesAprobados(df_merge_csv)
 
 if __name__ == "__main__":
     main()
