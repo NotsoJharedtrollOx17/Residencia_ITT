@@ -22,15 +22,20 @@ def wordCloud(df_csv, columna_csv):
     palabras_filtradas = getFilteredSpanishWords(texto)
 
     # * Generación de la nube de palabras
-    wordcloud = WordCloud(background_color='white', max_font_size=40).generate(palabras_filtradas)
+    wordcloud = WordCloud(width=1600, height=800, 
+                          background_color='white', 
+                          #max_font_size=40
+                          ).generate(palabras_filtradas)
 
     # * Parametros para graficos
     fig, axes = plt.subplots(figsize=(10, 6), dpi=600)
     axes.axis('off') # sin ejes
-    axes.imshow(wordcloud, interpolation='bilinear')
+    axes.imshow(wordcloud, 
+                #interpolation='bilinear'
+                )
     axes.set_title(f"{nombre_pregunta[columna_csv-1]}", fontsize=12)
 
-    plt.savefig(f"../results/plots/{nombre_archivo}")
+    plt.savefig(f"../results/plots/{nombre_archivo}", bbox_inches='tight')
     plt.close()
     print(f"GRAFICA {nombre_archivo} realizada con éxito!")
 
@@ -586,7 +591,7 @@ def main():
     #getHistogramaDatosDemograficos(df_normalizado)
     #getHistogramaDiagnosticoAprendizajeQuimica(df_normalizado)
     getWordCloudOpinionesQuimica(df_normalizado)
-    getIncidenciasEncuestaPreliminar(df_normalizado)
+    #getIncidenciasEncuestaPreliminar(df_normalizado)
     #getNumberLineRankingTematicasPreguntasAbiertas(df_ranking_csv)
     #getScatterCalificacionesAprobados(df_merge_csv)
 
