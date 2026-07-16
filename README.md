@@ -24,6 +24,12 @@ In this investigation we describe the impact obtained by utilizing Digital Tools
 
 MIT License
 
+# Reconocimiento de uso de IA
+
+Se declara que ChatGPT<sup>1</sup> fue utilizado para apoyar el análisis, interpretación, y desarrollo del código para el pipeline de datos que generó las gráficas provistas en el reporte.
+
+> <sup>1</sup> Conversación completa disponible como tres fragmentos en [`./ai-conversation/`](./ai-conversation/). El inicio del respaldo indica que los fragmentos se extrajeron desde Gemini ya que se exportó la conversación original hacia Gemini.
+
 ## Cita Bibliográfica
 
 ```
