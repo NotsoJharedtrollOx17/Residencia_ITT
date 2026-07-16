@@ -13,7 +13,7 @@ En esta investigación se describe el impacto que se obtiene al utilizar Herrami
 
 ### Abstract
 
-lorem ipsum dolor
+In this investigation we describe the impact obtained by utilizing Digital Tools such as ChatGPT, Kahoot y Chemistry to assist the teaching-learning process of the subject matter of Chemistry for the students of the undergrad in Mechanical Engineering of the Instituto Tecnológico de Tijuana. This is because the subject has ranked a high failure score on a vital course of their academic record. For the study we applied a Preliminary Survey for the sake of knowing our study subjects better (39 students; 5 women, 34 men), where we subsequently assigned them into the Control Group (20 subjects) and the Experimental Group (19 subjects). We prescribed them with the proposed problems as a treatment to improve their academic scores and to obtain data via the Pre-Test and Post-Test. Furthermore, the results were analyzed with the Python programming language where found that the proposed treatment did produced an improvement, although their passing grades suggest that the alternative teaching method is worse than the traditional method. The aforementioned traditional method generated slightly better passing grades than the proposed method, which shows the presence of confounding variables in the methodology. As a result, further research is needed to refute our results.
 
 ## Créditos
 
