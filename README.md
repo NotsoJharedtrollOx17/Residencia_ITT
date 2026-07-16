@@ -20,6 +20,10 @@ In this investigation we describe the impact obtained by utilizing Digital Tools
 - José Sergio Magdaleno Palencia (Asesor Interno)
 - Raúl Alberto Gracia Soto (Asesor Externo)
 
+## Licencia
+
+MIT License
+
 ## Cita Bibliográfica
 
 ```
